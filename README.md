@@ -270,13 +270,13 @@ vídeo novos, as telas animadas e as versões que vêm por aí.
 <div align="center">
 
 <a href="https://www.asaas.com/000/c/fymw4xl2f5b3n05b"><img src="https://img.shields.io/badge/Apoiar%20com%20R%24%20100-2EE59D?style=for-the-badge&logo=githubsponsors&logoColor=0F1114" alt="Apoiar com R$ 100" /></a>
-<a href="https://wa.me/?text=O%20Claquete.ai%20%C3%A9%20o%20est%C3%BAdio%20de%20v%C3%ADdeo%20que%20o%20Claude%20opera%3A%20aula%2C%20demonstra%C3%A7%C3%A3o%20e%20v%C3%ADdeo%20de%20redes%20com%20voz%20em%20portugu%C3%AAs.%20Gr%C3%A1tis%20e%20de%20c%C3%B3digo%20aberto%3A%20https%3A//github.com/dantaspaulo/claquete"><img src="https://img.shields.io/badge/Compartilhar%20no%20WhatsApp-0F1114?style=for-the-badge&logo=whatsapp&logoColor=25D366" alt="Compartilhar no WhatsApp" /></a>
+<a href="https://wa.me/?text=O%20Claquete.ai%20%C3%A9%20o%20est%C3%BAdio%20de%20v%C3%ADdeo%20que%20o%20Claude%20opera%3A%20aula%2C%20demonstra%C3%A7%C3%A3o%20e%20v%C3%ADdeo%20de%20redes%20com%20voz%20em%20portugu%C3%AAs.%20Gr%C3%A1tis%20e%20de%20c%C3%B3digo%20aberto%3A%20https%3A//claquete.ia.br"><img src="https://img.shields.io/badge/Compartilhar%20no%20WhatsApp-0F1114?style=for-the-badge&logo=whatsapp&logoColor=25D366" alt="Compartilhar no WhatsApp" /></a>
 
 </div>
 
 - **R$ 100 pelo Asaas**, no Pix, no cartão ou no boleto: [apoiar o projeto](https://www.asaas.com/000/c/fymw4xl2f5b3n05b).
 - **Valores maiores, direto no Pix**, com o valor que quiser. Chave (celular): `84988942848`.
-- **Conhece alguém que precisa fazer aula, tutorial ou vídeo de redes?** [Mande o Claquete no WhatsApp](https://wa.me/?text=O%20Claquete.ai%20%C3%A9%20o%20est%C3%BAdio%20de%20v%C3%ADdeo%20que%20o%20Claude%20opera%3A%20aula%2C%20demonstra%C3%A7%C3%A3o%20e%20v%C3%ADdeo%20de%20redes%20com%20voz%20em%20portugu%C3%AAs.%20Gr%C3%A1tis%20e%20de%20c%C3%B3digo%20aberto%3A%20https%3A//github.com/dantaspaulo/claquete).
+- **Conhece alguém que precisa fazer aula, tutorial ou vídeo de redes?** [Mande o Claquete no WhatsApp](https://wa.me/?text=O%20Claquete.ai%20%C3%A9%20o%20est%C3%BAdio%20de%20v%C3%ADdeo%20que%20o%20Claude%20opera%3A%20aula%2C%20demonstra%C3%A7%C3%A3o%20e%20v%C3%ADdeo%20de%20redes%20com%20voz%20em%20portugu%C3%AAs.%20Gr%C3%A1tis%20e%20de%20c%C3%B3digo%20aberto%3A%20https%3A//claquete.ia.br).
 
 <sub>As contribuições vão para a PSD Software, que mantém o projeto. Apoiar é opcional: o Claquete segue grátis e aberto para todo mundo.</sub>
 
