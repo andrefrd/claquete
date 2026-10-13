@@ -4,7 +4,7 @@
 //   2. o estúdio (projeto Remotion), novo ou atualizado sem perder o que é seu
 //   3. as ferramentas da máquina: ffmpeg, Python 3, os navegadores do Remotion e do Playwright, o app das telas
 //      animadas (cenas/) com os componentes do React Bits baixados do site oficial para a sua máquina e, se quiser, a
-//      transcrição local e gratuita para a revisão da fala (faster-whisper)
+//      transcrição local e gratuita para a revisão da fala e a edição de gravações (faster-whisper)
 //   4. a chave da ElevenLabs num .env só seu, e a voz pronta na sua conta (e, se tiver, a licença do React Bits Pro)
 //   5. a sua marca: um questionário (nome, público, cores, fontes, logo, tom, chamada, voz) e o material que você
 //      tiver (pasta, HTML, .md ou link), para o Claude ler depois
@@ -220,7 +220,7 @@ function instaladorDoSistema(pacote) {
 
 // Atualiza o estúdio sem tocar no que é da pessoa: roteiros, gravações, marca, saída, chaves e a configuração dela
 // (que só ganha as chaves novas que não tinha).
-const DA_PESSOA = ["aulas", join("public", "aulas"), join("public", "gravacoes"), join("public", "marca"), "marca", "saida", ".env", "kit.config.json", "node_modules",
+const DA_PESSOA = ["aulas", "edicoes", join("public", "aulas"), join("public", "gravacoes"), join("public", "marca"), "marca", "saida", ".env", "kit.config.json", "node_modules",
   join("cenas", "node_modules"), join("cenas", "dist"), join("cenas", "src", "aulas"), join("cenas", "src", "components", "react-bits"), join("cenas", "public", "vendor")];
 // nunca saem do repositório para o estúdio de ninguém (são da máquina de quem desenvolve ou baixados na hora)
 const NAO_COPIAR = ["node_modules", "saida", ".venv", join("public", "aulas"), join("public", "gravacoes"), join("cenas", "node_modules"), join("cenas", "dist"),
@@ -333,7 +333,7 @@ async function questionarioMarca(perguntar, estudio) {
     linha: await perguntar("  Linha de apoio", ""),
   };
 
-  titulo("  Vídeos para redes (versão 2.2)");
+  titulo("  Vídeos para redes (versão 2.3)");
   m.avatar = { provedor: (await escolha("Provedor do avatar apresentador", ["Higgsfield (principal)", "HeyGen (alternativa)", "não vou usar avatar"], 1)).split(" ")[0].toLowerCase() };
 
   mkdirSync(join(estudio, "marca"), { recursive: true });
@@ -485,7 +485,7 @@ async function main() {
     if (py && !tem("--sem-ferramentas")) {
       const temWhisper = existsSync(venvPy) && spawnSync(`"${venvPy}" -c "import faster_whisper"`, { shell: true, stdio: "pipe" }).status === 0;
       if (temWhisper) ok("transcrição local (faster-whisper, em .venv)");
-      else if (tem("--transcricao-local") || (!semPerguntas && (await sim("  Transcrição local e gratuita para a revisão da fala (faster-whisper; uns 500 MB com o modelo, baixado no primeiro uso)?")))) {
+      else if (tem("--transcricao-local") || (!semPerguntas && (await sim("  Transcrição local e gratuita para a revisão da fala e a edição de gravações (faster-whisper; uns 500 MB com o modelo, baixado no primeiro uso)?")))) {
         const cmd = `${py} -m venv .venv && "${venvPy}" -m pip install --quiet faster-whisper`;
         roda(cmd, estudio) ? ok("transcrição local (faster-whisper, em .venv)") : nao(`faster-whisper: rode no estúdio: ${cmd}`);
       } else nao("sem transcrição local: a revisão da fala é feita pela sessão do Claude e por você, ouvindo");
@@ -579,6 +579,7 @@ async function main() {
     console.log(`  Abra o Claude na pasta ${verde(pastaEstudio)} e diga ${verde('"quero fazer um vídeo"')}.`);
     console.log("  Ele pergunta o tipo (demonstração, aula animada, dica, caso, trilha) e, nas aulas, a duração de 2 a 5 minutos.");
     console.log(`  Para ver as telas animadas: ${verde('"faz a aula animada-exemplo"')} (cenas em React, fotografadas no tempo da voz).`);
+    console.log(`  Gravou no Screen Studio 4? ${verde('"edita minha gravação"')}: editada, híbrida e cortes em pé, com a sua voz.`);
     if (existsSync(join(estudio, "marca", "material"))) console.log(`  Para ele ler o material da marca: ${verde('"configura minha marca"')}.`);
   }
   console.log(fraco("  Durante as gravações a IA opera o computador: deixe a máquina livre e feche o que for pesado.\n"));

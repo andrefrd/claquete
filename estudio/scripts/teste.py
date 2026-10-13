@@ -82,6 +82,300 @@ def testes_licenca():
         print("pulado  React Bits versionado (fora do repositório da Claquete)")
 
 
+# ── gravação editada (2.2): uma gravação do Screen Studio 4 de mentira, com tons no lugar das palavras ─────────────
+
+VOCAB = {"um": 300, "dois": 380, "tres": 460, "quatro": 540, "cinco": 620, "seis": 700, "sete": 780, "oito": 860, "nove": 940,
+         "dez": 1020, "onze": 1100, "doze": 1180, "né": 1500}
+# palavras de 0,30 s com 0,12 s entre elas: "né" é muleta (3), "sete" se repete (7 e 8), há uma pausa longa e uma espera
+FALA = ["um", "dois", "tres", "né", "quatro", "cinco", 1.5, "seis", "sete", "sete", "oito", 3.0, "nove", "dez", "onze", "doze"]
+
+# O transcritor de mentira fala o formato do transcritor do Screen Studio (uma linha JSON por palavra) e reconhece cada
+# palavra pela frequência do tom. Como o da Apple, começa cada palavra onde a anterior acabou (a pausa entra nela).
+TRANSCRITOR_FALSO = r"""
+import array, json, math, os, sys, wave
+VOCAB = %s
+arq = sys.argv[1]
+if os.environ.get("FALSO_LOG"):
+    open(os.environ["FALSO_LOG"], "a").write(os.path.basename(arq) + "\n")
+with wave.open(arq) as w:
+    sr = w.getframerate(); a = array.array("h", w.readframes(w.getnframes()))
+n = int(sr * 0.01)
+en = []
+for i in range(0, len(a) - n + 1, n):
+    r = math.sqrt(sum(v * v for v in a[i:i + n]) / n) / 32768
+    en.append(20 * math.log10(r) if r > 1e-7 else -140)
+reg, ini = [], None
+for i, e in enumerate(en + [-140]):
+    if e > -30 and ini is None:
+        ini = i
+    elif e <= -30 and ini is not None:
+        if i - ini >= 8:
+            reg.append((ini, i))
+        ini = None
+print("Transcribe audio starting...")
+fim = 0.0
+for a0, a1 in reg:
+    seg = a[a0 * n:a1 * n]
+    f = sum(1 for k in range(1, len(seg)) if (seg[k - 1] < 0) != (seg[k] < 0)) / (2 * len(seg) / sr)
+    w = min(VOCAB, key=lambda k: abs(VOCAB[k] - f))
+    print(json.dumps({"type": "word", "word": w, "start": round(fim, 3), "end": round(a1 * 0.01, 3), "confidence": 0.9}))
+    fim = a1 * 0.01
+""" % json.dumps(VOCAB, ensure_ascii=False)
+
+
+def gravacao_falsa(p):
+    """Um projeto .screenstudio do 4.x: tela, microfone, câmera, cursor e cliques, como o app grava."""
+    import array as _array
+    import math
+    import wave
+    rec = p / "recording"
+    (rec / "cursors").mkdir(parents=True)
+    sr, amostras, t = 48000, _array.array("h"), 0.0
+    for item in FALA:
+        if isinstance(item, float):
+            amostras.extend([0] * int(item * sr))
+            t += item
+            continue
+        for k in range(int(0.30 * sr)):
+            env = min(1, k / (0.01 * sr), (0.30 * sr - k) / (0.01 * sr))
+            amostras.append(int(0.4 * 32767 * env * math.sin(2 * math.pi * VOCAB[item] * k / sr)))
+        amostras.extend([0] * int(0.12 * sr))
+        t += 0.42
+    amostras.extend([0] * int(0.5 * sr))
+    t += 0.5
+    with wave.open(str(rec / "fala.wav"), "wb") as w:
+        w.setnchannels(1)
+        w.setsampwidth(2)
+        w.setframerate(sr)
+        w.writeframes(amostras.tobytes())
+
+    def ff(*a):
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", *map(str, a)], check=True)
+    ff("-i", rec / "fala.wav", "-c:a", "aac", rec / "channel-2-microphone-0.m4a")
+    (rec / "fala.wav").unlink()
+    ff("-f", "lavfi", "-i", f"testsrc2=size=640x360:rate=30:duration={t:.2f}", "-pix_fmt", "yuv420p", rec / "channel-1-display-0.mp4")
+    ff("-f", "lavfi", "-i", f"testsrc=size=320x240:rate=30:duration={t:.2f}", "-pix_fmt", "yuv420p", rec / "channel-3-webcam-0.mp4")
+    ff("-f", "lavfi", "-i", "color=c=black:s=17x23", "-frames:v", "1", rec / "cursors" / "arrow.png")
+    t0 = 1000.0
+
+    def sessao(**k):
+        return {"durationMs": t * 1000, "processTimeStartMs": t0, **k}
+    meta = {"recorders": [
+        {"id": "channel-0-cursor", "type": "cursor", "cursorImagesFolder": "cursors", "cursorsInfoFile": "cursors.json"},
+        {"id": "channel-0-input", "type": "input", "sessions": [sessao(mouseMovesFilename="mousemoves-0.json", mouseClicksFilename="mouseclicks-0.json")]},
+        {"id": "channel-1-display", "type": "display", "sessions": [sessao(outputFilename="channel-1-display-0.mp4",
+                                                                            bounds={"x": 100, "y": -360, "width": 640, "height": 360})]},
+        {"id": "channel-2-microphone", "type": "microphone", "sessions": [sessao(outputFilename="channel-2-microphone-0.m4a")]},
+        {"id": "channel-3-webcam", "type": "webcam", "sessions": [sessao(outputFilename="channel-3-webcam-0.mp4")]}]}
+    (rec / "metadata.json").write_text(json.dumps(meta))
+    (rec / "mousemoves-0.json").write_text(json.dumps([{"processTimeMs": t0 + k * 250, "x": 100 + (20 * k) % 640, "y": -360 + (12 * k) % 360,
+                                                        "cursorId": "arrow", "type": "mouseMoved"} for k in range(int(t * 4))]))
+    (rec / "mouseclicks-0.json").write_text(json.dumps([{"processTimeMs": t0 + 2000, "x": 300, "y": -200, "type": "mouseDown"}]))
+    (rec / "cursors.json").write_text(json.dumps([{"id": "arrow", "hotSpot": {"x": 4, "y": 4}, "standardSize": {"width": 17, "height": 23}}]))
+    (p / "meta.json").write_text(json.dumps({"json": {"version": "4.0.4-teste"}, "meta": {"v": 1}}))
+    (p / "project.json").write_text(json.dumps({"json": {"name": "Gravação de teste", "id": "AbCdEfGhIj", "config": {
+        "styles": {"cameraBorderRadiusRatio01": 0.15}, "captions": {"enableTranscript": True},
+        "defaultLayout": {"cameraOverlay": {"overlayCameraSizeRatio01": 0.5, "overlayZoomedCameraScale": 0.8, "overlayCameraAspectRatio": 1}}},
+        "scenes": [{"zooms": [], "slices": [{"id": "x0", "timeScale": 1, "sourceStartMs": 0, "sourceEndMs": t * 1000, "volume": 1,
+                                             "systemAudioVolume": 1, "externalDeviceAudioVolume": 1}]}]}, "meta": {"values": {}, "v": 1}}))
+
+
+def testes_gravacao(raiz, tmp):
+    import hashlib
+    import shlex
+    falso, log = tmp / "transcritor_falso.py", tmp / "falso.log"
+    falso.write_text(TRANSCRITOR_FALSO, encoding="utf-8")
+    proj = tmp / "projetos" / "Gravação de teste.screenstudio"
+    gravacao_falsa(proj)
+    ambiente = {"PATH": "/usr/bin:/bin:/usr/local/bin:/opt/homebrew/bin", "CLAQUETE_TRANSCRITOR": f"{shlex.quote(sys.executable)} {shlex.quote(str(falso))}",
+                "FALSO_LOG": str(log)}
+
+    def grav(*args):
+        r = subprocess.run([sys.executable, "scripts/gravacao.py", *map(str, args)], cwd=raiz, capture_output=True, text=True, env=ambiente)
+        return r.returncode, r.stdout + r.stderr
+
+    arq = raiz / "edicoes" / "g.json"
+    trab = raiz / "saida" / "edicoes" / "g"
+
+    def roteiro(**mudar):
+        r = json.loads(arq.read_text(encoding="utf-8"))
+        r.update(mudar)
+        arq.write_text(json.dumps(r, ensure_ascii=False))
+
+    rc, out = grav("novo", "g", "--projeto", tmp)
+    confere("gravação: novo recusa pasta que não é projeto do Screen Studio", rc == 1 and "Screen Studio" in out)
+    rc, out = grav("novo", "g", "--projeto", proj)
+    rc2, out2 = grav("transcrever", "g")
+    ws = json.loads((trab / "transcricao" / "palavras.json").read_text()) if rc2 == 0 else []
+    confere("gravação: transcreve a fala palavra a palavra, no computador", rc == 0 and [w["w"] for w in ws] == [x for x in FALA if isinstance(x, str)])
+    if len(ws) != 14:
+        print(out, out2)
+        return
+    roteiro(remover=[[3, 3], [7, 7]], acelerar=[{"de": 5.7, "ate": 8.6, "vel": 4}], proibidos=[{"de": 9.1, "ate": 9.45, "antes": 9.0, "depois": 9.5}],
+            zooms=[{"de": 1.5, "ate": 2.5, "escala": 1.6, "x": 320, "y": 180}], mascaras=[{"de": 0, "ate": 3, "retangulos": [[10, 10, 100, 30]]}])
+    rc, out = grav("plano", "g")
+    plano = json.loads((trab / "plano.json").read_text()) if rc == 0 else {"trechos": [], "fica": []}
+    tr = plano["trechos"]
+    confere("gravação: o plano tira a muleta e a repetição e deixa as outras palavras", plano["fica"] == [0, 1, 2, 4, 5, 6, 8, 9, 10, 11, 12, 13])
+    confere("gravação: a pausa longa encolhe (do silêncio de 1,5 s só ficam as bordas)",
+            bool(tr) and not any(t["ini"] < 3.85 and t["fim"] > 2.6 for t in tr if not t["mudo"]))
+    confere("gravação: a espera acelerada vira trecho mudo, e o proibido congela a tela com a fala por cima",
+            any(t["mudo"] and t["vel"] == 4 for t in tr) and any(t.get("congelar") == 9.5 and not t["mudo"] for t in tr))
+    roteiro(proibidos=[{"de": 6.0, "ate": 7.0}])
+    rc, out = grav("plano", "g")
+    confere("gravação: espera acelerada que cruza um trecho proibido é recusada", rc == 1 and "cruza o proibido" in out)
+    roteiro(proibidos=[{"de": 9.1, "ate": 9.45, "antes": 9.0, "depois": 9.5}])
+    grav("plano", "g")
+
+    rc, out = grav("renderizar", "g", "--versao", "editada")
+    confere("gravação: renderizar sem o ok ao plano para no portão 1", rc == 2 and "ok da pessoa" in out)
+    rc, _ = grav("aprovar", "g")
+    roteiro(zooms=[{"de": 1.5, "ate": 2.6, "escala": 1.5, "x": 300, "y": 180}])
+    k = carregar_gravacao(raiz)
+    r = k.roteiro("g")
+    confere("gravação: ajustar um zoom não pede ok novo", rc == 0 and k.aprovado(r))
+    roteiro(remover=[[3, 3], [7, 7], [12, 12]])
+    confere("gravação: mudar o que sai da fala pede ok novo", not k.aprovado(k.roteiro("g")))
+    roteiro(remover=[[3, 3], [7, 7]])
+    pausas = json.loads(arq.read_text(encoding="utf-8"))["pausas"]
+    roteiro(pausas={**pausas, "minima": 0.6})
+    rc, out = grav("audio", "g")
+    confere("gravação: o audio recusa plano velho (o roteiro mudou depois do plano)", rc == 1 and "depois do plano" in out)
+    roteiro(pausas=pausas)
+    grav("plano", "g")
+    grav("audio", "g")
+    grav("conferir", "g")
+    rc, out = grav("conferir", "g", "--aprovado")
+    confere("gravação: conferir --aprovado recusa corte sem prova", rc == 1 and "sem prova" in out)
+    rc, out = grav("emendas", "g")
+    em = json.loads((trab / "transcricao" / "emendas.json").read_text()) if rc == 0 else {"cortes": []}
+    confere("gravação: as duas emendas saem provadas (transcrição de 1,6 s antes e depois)",
+            len(em["cortes"]) == 2 and all(c["nota"] >= 0.99 for c in em["cortes"]))
+    rc, out = grav("conferir", "g")
+    confere("gravação: depois das emendas a fala editada velha é recusada (o plano mudou)", rc == 1 and "fala editada não é a do plano" in out)
+    grav("audio", "g")
+    p = json.loads((trab / "plano.json").read_text())
+    dur = float(subprocess.run(["ffprobe", "-v", "error", "-show_entries", "format=duration", "-of", "csv=p=0", str(trab / "audio-editada.wav")],
+                               capture_output=True, text=True).stdout or 0)
+    confere("gravação: a fala editada tem o tamanho exato do vídeo", abs(dur - p["quadros"] / 30) < 0.03)
+    rc, out = grav("conferir", "g")
+    c = json.loads((trab / "conferencia.json").read_text()) if (trab / "conferencia.json").exists() else {}
+    confere("gravação: conferir transcreve a fala editada e para no portão 2", rc == 2 and c.get("semelhanca") == 1.0)
+    rc, out = grav("conferir", "g", "--aprovado")
+    confere("gravação: conferir --aprovado libera", rc == 0)
+    (trab / "conferencia-aprovada.json").unlink(missing_ok=True)
+    rc, out = grav("renderizar", "g", "--versao", "editada")
+    confere("gravação: renderizar sem a revisão da fala editada para no portão 2", rc == 2 and "revisão" in out)
+    c["semelhanca"] = 0.5
+    (trab / "conferencia.json").write_text(json.dumps(c, ensure_ascii=False))
+    rc, out = grav("conferir", "g", "--aprovado")
+    confere("gravação: fala editada que não bate com o texto esperado não se aprova", rc == 1 and "bate" in out)
+    grav("conferir", "g")
+    grav("conferir", "g", "--aprovado")
+
+    rc, out = grav("montar", "g")
+    pub = trab / "editada" / "publico"
+    dados = json.loads((pub / "dados.json").read_text()) if rc == 0 else {"quadros": -1, "tela": {"partes": []}}
+    partes_ok = all(int(subprocess.run(["ffprobe", "-v", "error", "-select_streams", "v:0", "-count_packets", "-show_entries", "stream=nb_read_packets",
+                                        "-of", "csv=p=0", str(pub / a)], capture_output=True, text=True).stdout.strip().split(",")[0]) == min(900, dados["quadros"])
+                    for a in dados["tela"]["partes"])
+    confere("gravação: montar faz a tela e a câmera do tamanho exato do plano, com cursor e clique",
+            rc == 0 and dados["quadros"] == p["quadros"] and partes_ok and dados["tela"]["cliques"] and (pub / "cursores" / "arrow.png").exists())
+
+    original = hashlib.sha256((proj / "project.json").read_bytes()).hexdigest()
+    rc, out = grav("fatias", "g", "--nome", "Copia")
+    confere("gravação: as fatias recusam mostrar no Screen Studio o trecho proibido e a máscara",
+            rc == 1 and "proibido" in out and "máscara" in out and not (proj.parent / "Copia.screenstudio").exists())
+
+    roteiro(hibrido={"blocos": [{"nome": "fim", "de": 8.6, "ate": 11}, {"nome": "fim de novo", "de": 9.4, "ate": 11}]})
+    grav("plano", "g")
+    grav("aprovar", "g")
+    rc, out = grav("hibrido", "g")
+    confere("gravação: a mesma fala em dois blocos é recusada", rc == 1 and "dois blocos" in out)
+    cena = {"de": 8.6, "ate": 10.4, "tela": {"tipo": "lista", "titulo": "Os *números*", "itens": [{"texto": "Nove", "quando": "nove"}, {"texto": "Vinte", "quando": "vinte"}]}}
+    roteiro(hibrido={"blocos": [{"nome": "fim", "de": 8.6, "ate": 11}, {"nome": "começo", "de": 0, "ate": 5.7}], "cenas": [cena]},
+            mascaras=[{"de": 9.0, "ate": 10.0, "retangulos": [[10, 10, 100, 30]]}])
+    grav("plano", "g")
+    grav("aprovar", "g")
+    rc, out = grav("hibrido", "g")
+    confere("gravação: cena que entra numa palavra que a fala não tem é recusada", rc == 1 and "vinte" in out)
+    cena["tela"]["itens"][1] = {"texto": "Doze", "quando": "doze"}
+    roteiro(hibrido={"blocos": [{"nome": "fim", "de": 8.6, "ate": 11}, {"nome": "começo", "de": 0, "ate": 5.7}], "cenas": [cena]})
+    grav("plano", "g")
+    grav("aprovar", "g")
+    rc, out = grav("hibrido", "g")
+    h = json.loads((trab / "hibrida" / "publico" / "dados.json").read_text()) if rc == 0 else {"legendas": [{"palavras": [{"w": "?"}]}], "cenas": []}
+    confere("gravação: a híbrida remonta a fala na ordem nova, com a cena por cima",
+            rc == 0 and h["legendas"][0]["palavras"][0]["w"] == "Nove" and len(h["cenas"]) == 1 and h["cenas"][0]["q0"] == 0)
+
+    rc, out = grav("fatias", "g", "--nome", "Copia")
+    copia = proj.parent / "Copia.screenstudio"
+    j = json.loads((copia / "project.json").read_text())["json"] if rc == 0 else {"config": {}}
+    sl = j.get("scenes", [{}])[0].get("slices", [])
+    soma = sum((x["sourceEndMs"] - x["sourceStartMs"]) * x["timeScale"] for x in sl) / 1000
+    fat = json.loads((trab / "fatias.json").read_text()) if rc == 0 else {"duracao": -1}
+    confere("gravação: as fatias vão para uma CÓPIA do projeto, em ordem, com a câmera em bolinha e sem a legenda do app",
+            rc == 0 and len(sl) > 1 and abs(soma - fat["duracao"]) < 0.05 and [x["sourceStartMs"] for x in sl] == sorted(x["sourceStartMs"] for x in sl)
+            and j["config"].get("styles", {}).get("cameraBorderRadiusRatio01") == 1 and j["config"].get("captions", {}).get("enableTranscript") is False
+            and j["config"].get("defaultLayout", {}).get("cameraOverlay", {}).get("overlayCameraSizeRatio01") == 0.32)
+    confere("gravação: o projeto original fica intacto", hashlib.sha256((proj / "project.json").read_bytes()).hexdigest() == original)
+    rc, out = grav("fatias", "g", "--nome", "Copia")
+    confere("gravação: as fatias não sobrescrevem uma cópia que já existe", rc == 1 and "já existe" in out)
+
+    def exportacao(nome, segundos):
+        subprocess.run(["ffmpeg", "-y", "-loglevel", "error", "-f", "lavfi", "-i", f"testsrc2=size=1280x720:rate=30:duration={segundos:.3f}", "-f", "lavfi",
+                        "-i", f"sine=frequency=500:duration={segundos:.3f}", "-shortest", "-pix_fmt", "yuv420p", str(tmp / nome)], check=True)
+        return tmp / nome
+    rc, out = grav("hibrido", "g", "--exportacao", exportacao("errada.mp4", fat["duracao"] + 4))
+    confere("gravação: exportação que não bate com as fatias é recusada", rc == 1 and "exportação tem" in out)
+    rc, out = grav("hibrido", "g", "--exportacao", exportacao("certa.mp4", fat["duracao"]))
+    h = json.loads((trab / "hibrida" / "publico" / "dados.json").read_text()) if rc == 0 else {}
+    confere("gravação: com a exportação, a tela da híbrida é a do Screen Studio", rc == 0 and h.get("telaPronta") and h.get("tela") is None)
+
+    roteiro(reels={"max_segundos": 2, "cortes": [{"id": "r1", "gancho": "Um *gancho*", "titulo": "T", "trechos": [[8.6, 11], [0, 2.6]]}]})
+    grav("plano", "g")
+    grav("aprovar", "g")
+    rc, out = grav("reels", "g")
+    confere("gravação: corte em pé acima do máximo é recusado", rc == 1 and "máximo" in out)
+    roteiro(reels={"cortes": [{"id": "r1", "gancho": "Um *gancho*", "titulo": "T", "trechos": [[8.6, 11], [0, 2.6]]}]})
+    grav("plano", "g")
+    grav("aprovar", "g")
+    rc, out = grav("reels", "g")
+    rl = json.loads((trab / "reels" / "publico" / "dados-r1.json").read_text()) if rc == 0 else {"quadros": 0, "blocos": []}
+    fonte = sum(t["fim"] - t["ini"] for t in json.loads((trab / "plano.json").read_text())["trechos"]
+                if (8.6 <= t["ini"] < 11 or 0 <= t["ini"] < 2.6))
+    confere("gravação: o corte em pé sai a 1,3x, com legenda de até 3 palavras",
+            rc == 0 and abs(rl["quadros"] / 30 - fonte / 1.3) < 0.2 and all(len(b["palavras"]) <= 3 for b in rl["blocos"]) and rl["blocos"])
+
+    grav("montar", "g")
+    k = carregar_gravacao(raiz)
+    k.MINIMO_LIVRE_GB = 10 ** 9
+    try:
+        k.cmd_renderizar(k.roteiro("g"), "editada")
+        confere("gravação: render recusa com o disco quase cheio", False)
+    except k.Erro as e:
+        confere("gravação: render recusa com o disco quase cheio", "livres" in str(e))
+        "livres" in str(e) or print(e)
+    rc, out = grav("entregar", "g", "--destino", tmp / "entregue")
+    confere("gravação: entregar sem vídeo pronto não apaga nada", rc == 1 and (trab / "plano.json").exists())
+    # o transcritor do Screen Studio devolve o resultado guardado quando o caminho se repete: a mesma fala editada
+    # conferida duas vezes (e cada prova de emenda) tem de ir com um nome novo
+    grav("conferir", "g")
+    nomes = log.read_text().split()
+    confere("gravação: cada transcrição vai ao transcritor com um nome de arquivo novo", len(nomes) >= 5 and len(set(nomes)) == len(nomes))
+
+
+def carregar_gravacao(raiz):
+    sys.path.insert(0, str(raiz / "scripts"))
+    for m in ("gravacao", "kit"):
+        sys.modules.pop(m, None)
+    spec = importlib.util.spec_from_file_location("gravacao", raiz / "scripts" / "gravacao.py")
+    m = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(m)
+    sys.path.pop(0)
+    return m
+
+
 def main():
     if "--licenca" in sys.argv:
         ruins = licenca_react_bits(sys.argv[sys.argv.index("--licenca") + 1:])
@@ -91,7 +385,7 @@ def main():
     testes_licenca()
     tmp = Path(tempfile.mkdtemp())
     raiz = tmp / "estudio"
-    shutil.copytree(ESTUDIO, raiz, ignore=shutil.ignore_patterns("node_modules", ".venv", "saida", "aulas", "public", "dist", "react-bits"))
+    shutil.copytree(ESTUDIO, raiz, ignore=shutil.ignore_patterns("node_modules", ".venv", "saida", "aulas", "edicoes", "public", "dist", "react-bits"))
     (raiz / "cenas" / "src" / "aulas").mkdir(parents=True, exist_ok=True)
     shutil.copy(ESTUDIO / "cenas" / "src" / "aulas" / "animada-exemplo.jsx", raiz / "cenas" / "src" / "aulas" / "animada-exemplo.jsx")
     (raiz / "aulas").mkdir()
@@ -275,6 +569,8 @@ def main():
         confere("render recusa com o disco quase cheio", False)
     except k.Erro as e:
         confere("render recusa com o disco quase cheio", "livres" in str(e))
+
+    testes_gravacao(raiz, tmp)
 
     shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{'TUDO CERTO' if not falhas else str(len(falhas)) + ' FALHA(S)'}")

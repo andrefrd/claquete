@@ -1,6 +1,7 @@
 node_modules/
 estudio/node_modules/
 estudio/saida/
+estudio/edicoes/
 estudio/public/aulas/
 estudio/public/gravacoes/
 estudio/sessao*.json

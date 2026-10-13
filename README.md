@@ -2,13 +2,13 @@
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0F1114,100:153626&height=210&section=header&text=Claquete.ai&fontColor=FFFFFF&fontSize=58&fontAlignY=36&desc=o%20est%C3%BAdio%20de%20v%C3%ADdeo%20que%20o%20Claude%20opera&descAlignY=58&descSize=18" width="100%" alt="Claquete.ai" />
 
-<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&pause=1300&color=2EE59D&center=true&vCenter=true&width=760&lines=Demonstra%C3%A7%C3%A3o+e+trilha+de+uma+ferramenta;Aula+animada+de+2+a+5+minutos;Avatar%2C+an%C3%BAncio+e+corte+viral;Vinheta+de+marca+em+motion+design;O+Claude+roteiriza%2C+grava%2C+edita+e+revisa" alt="O que o Claquete faz" />
+<img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&pause=1300&color=2EE59D&center=true&vCenter=true&width=760&lines=Demonstra%C3%A7%C3%A3o+e+trilha+de+uma+ferramenta;Aula+animada+de+2+a+5+minutos;Sua+grava%C3%A7%C3%A3o+do+Screen+Studio%2C+editada;Avatar%2C+an%C3%BAncio+e+corte+viral;Vinheta+de+marca+em+motion+design;O+Claude+roteiriza%2C+grava%2C+edita+e+revisa" alt="O que o Claquete faz" />
 
 <br/>
 
 <a href="#-instalar"><img src="https://img.shields.io/badge/npx%20github%3Adantaspaulo%2Fclaquete-2EE59D?style=for-the-badge&logo=npm&logoColor=0F1114" alt="Instalar" /></a>
 <a href="#-tipos-de-v%C3%ADdeo"><img src="https://img.shields.io/badge/Ver%20exemplos-0F1114?style=for-the-badge&logo=youtube&logoColor=2EE59D" alt="Ver exemplos" /></a>
-<a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-2.1.0-0F1114?style=for-the-badge" alt="Versão 2.1.0" /></a>
+<a href="CHANGELOG.md"><img src="https://img.shields.io/badge/vers%C3%A3o-2.2.0-0F1114?style=for-the-badge" alt="Versão 2.2.0" /></a>
 <img src="https://img.shields.io/badge/licen%C3%A7a-MIT-0F1114?style=for-the-badge" alt="Licença MIT" />
 <a href="#-apoie-o-projeto"><img src="https://img.shields.io/badge/apoie-%F0%9F%92%9B-0F1114?style=for-the-badge" alt="Apoie o projeto" /></a>
 
@@ -16,6 +16,7 @@
 
 **Claquete.ai** (antes `kit-video-ia`) é o método com que são feitas as aulas, os tutoriais e os vídeos de redes do ChatADV.<br/>
 Você escolhe o tipo de vídeo; o Claude escreve o roteiro e o plano de edição, grava a tela, narra, edita e revisa.<br/>
+Gravou você mesmo no Screen Studio? Ele edita a sua gravação, monta uma versão com o raciocínio e tira os cortes para Reels.<br/>
 Você decide em dois pontos, e travas recusam roteiro sem ok, fala sem revisão e tela parada.
 
 </div>
@@ -35,14 +36,17 @@ escolha), o público e o formato: deitado, em pé ou os dois.
 | 📂 | Caso completo | um caso do começo ao fim, em série, com a ferramenta trabalhando de verdade | aulas de 2 a 5 min | ✅ |
 | 🎓 | Aula animada | aula didática e dinâmica, sem mostrar ferramenta | 2 a 5 min | ✅ |
 | 💡 | Dica rápida | um recurso só, direto ao ponto | 30 a 90 s | ✅ |
-| 📲 | Instrução no celular | passo a passo no celular, com as telas do sistema desenhadas | até 1 min | 🔜 2.3 |
+| 📲 | Instrução no celular | passo a passo no celular, com as telas do sistema desenhadas | até 1 min | 🔜 2.4 |
+| | **Sua gravação** (Screen Studio 4) | | | |
+| 🎙️ | Gravação editada | a sua gravação sem muletas, repetições, frases erradas e esperas, com zoom, legenda e a câmera na bolinha | a da gravação | ✅ novo |
+| 🧩 | Gravação híbrida | a sua fala remontada num raciocínio, com o acabamento do Screen Studio e cenas das aulas por cima da voz | a da gravação | ✅ novo |
 | | **Redes e vendas** | | | |
-| 🧑‍💼 | Avatar apresentador | pessoa gerada por IA apresentando o seu produto ou serviço | 15 a 40 s | 🔜 2.2 |
-| 📣 | Anúncio demonstrativo | em pé, sem pessoa: gancho, a ferramenta trabalhando e o diferencial | 20 a 35 s | 🔜 2.2 |
-| ✂️ | Corte viral | uma gravação longa vira vários Reels, com legenda palavra a palavra | 15 a 45 s | 🔜 2.2 |
-| 🖼️ | Carrossel e imagem | peças de feed 4:5 tiradas do mesmo material | · | 🔜 2.2 |
+| 🧑‍💼 | Avatar apresentador | pessoa gerada por IA apresentando o seu produto ou serviço | 15 a 40 s | 🔜 2.3 |
+| 📣 | Anúncio demonstrativo | em pé, sem pessoa: gancho, a ferramenta trabalhando e o diferencial | 20 a 35 s | 🔜 2.3 |
+| ✂️ | Corte viral | uma gravação do Screen Studio vira vários Reels, a 1,3x: gancho, prova e convite, legenda palavra a palavra | até 90 s | ✅ novo |
+| 🖼️ | Carrossel e imagem | peças de feed 4:5 tiradas do mesmo material | · | 🔜 2.3 |
 | | **Marca** | | | |
-| ✨ | Vinheta de marca | logo animado, abertura e encerramento, tipografia cinética e fundos animados | 3 a 10 s | 🔜 2.2 |
+| ✨ | Vinheta de marca | logo animado, abertura e encerramento, tipografia cinética e fundos animados | 3 a 10 s | 🔜 2.3 |
 | 🌐 | Vídeo para página | versão leve para site ou central de ajuda, com pôster e legenda | · | ✅ |
 
 <sub>Os exemplos abaixo foram feitos com este método no <b>ChatADV</b>, uma IA para advogados. Clique na imagem para ver o vídeo com som.</sub>
@@ -61,7 +65,7 @@ escolha), o público e o formato: deitado, em pé ou os dois.
 <a href="https://github.com/dantaspaulo/claquete/releases/download/v2.0.0/claquete-celular-instalar.mp4"><img src="docs/exemplos/celular-instalar.webp" width="20%" alt="Instrução no celular: instalar o app" /></a>
 <br/>
 <sub><b>Caso completo</b>: aula 6 de <a href="https://help.chatadv.com.br/hc/central-de-ajuda/articles/caso-plano-de-saude-1">Um caso do começo ao fim</a>, a IA trabalhando de verdade, com cortes, zoom e cenas animadas entre os passos.
-<b>Instrução no celular</b> (tipo da versão 2.3): instalar o app na tela inicial, com as telas do sistema desenhadas.</sub>
+<b>Instrução no celular</b> (tipo da versão 2.4): instalar o app na tela inicial, com as telas do sistema desenhadas.</sub>
 <br/><br/>
 <a href="https://github.com/dantaspaulo/claquete/releases/download/v1.2.0/claquete-aula-animada.mp4"><img src="docs/exemplos/aula-animada.webp" width="49%" alt="Aula animada: Introdução à IA Jurídica, aula 1" /></a>
 <a href="https://github.com/dantaspaulo/claquete/releases/download/v1.2.0/claquete-aula-animada-2.mp4"><img src="docs/exemplos/aula-animada-2.webp" width="49%" alt="Aula animada: Introdução à IA Jurídica, aula 3" /></a>
@@ -102,6 +106,40 @@ A aula `animada-exemplo` do estúdio tem três cenas prontas para ver como se es
 
 <br/>
 
+### 🎙️ Sua gravação do Screen Studio, editada (novo na 2.2)
+
+Você grava a tela, a câmera e a voz no [Screen Studio](https://screen.studio) 4, como sempre. O Claude edita sem abrir
+o app e sem API, e entrega três versões da mesma gravação:
+
+- **Editada:** sai o "né", o "certo", a palavra repetida, a frase que você errou e começou de novo, a pausa longa e a
+  espera da ferramenta (acelerada e muda, com "▶▶ 4x" na tela). Zoom com mola, o cursor e os cliques, a sua câmera na
+  bolinha, a legenda do que se ouve e o convite da sua marca no fim.
+- **Híbrida:** a sua fala remontada numa ordem de raciocínio (o problema, a solução, os usos, as demonstrações, o que
+  vem aí), com cenas das aulas por cima da sua voz: cada item entra na palavra que você diz. A tela sai do próprio
+  Screen Studio: o Claude grava os cortes numa cópia do projeto, com a câmera em bolinha, e você só clica em Export.
+- **Cortes em pé:** cada corte junta trechos numa narrativa curta (gancho, prova e convite) de até 90 s, a 1,3x, com
+  a tela num cartão de zoom mais fechado, legenda palavra a palavra e a câmera no alto.
+
+Como nas aulas, você decide em dois pontos, e travas seguram o resto:
+
+- **Transcrição no seu computador:** o transcritor que vem dentro do Screen Studio 4 (a fala da Apple, macOS 26 ou
+  mais novo) ou a transcrição local do estúdio. Nenhuma API, nenhuma chave.
+- **Cada emenda é provada:** o estúdio transcreve 1,6 s antes e 1,6 s depois de cada corte e só aceita se as palavras
+  vizinhas saíram inteiras e as cortadas sumiram.
+- **Portão 1, o plano de edição:** o que sai (cada corte com as palavras em volta), a ordem da híbrida, as cenas e os
+  cortes em pé. O vídeo só é renderizado com o seu ok.
+- **Portão 2, a fala editada:** transcrita de novo e comparada com o texto esperado; quem revisa é um subagente.
+- **Dado sensível:** o trecho proibido congela a tela com a sua fala por cima, e a máscara cobre o dado. A cópia para
+  o Screen Studio é recusada se fosse mostrar o que o estúdio esconde.
+- **Máquina com pouco disco:** o render vai em partes de 900 quadros e para entre uma e outra se o disco apertar.
+- **O seu projeto não muda:** o Screen Studio só é lido; a cópia com os cortes é um projeto novo, ao lado do seu.
+
+> edita minha gravação do Screen Studio: tira os vícios e as pausas, e faz três cortes para o Reels
+
+> monta a minha demonstração num raciocínio, problema, solução e o que vem aí, com cenas por cima da minha voz
+
+<br/>
+
 ### 📱 Redes e vendas
 
 <div align="center">
@@ -111,10 +149,10 @@ A aula `animada-exemplo` do estúdio tem três cenas prontas para ver como se es
 <a href="https://github.com/dantaspaulo/claquete/releases/download/v1.2.0/claquete-editar-corte.mp4"><img src="docs/exemplos/editar-corte.webp" width="19%" alt="Corte em pé de uma gravação do Screen Studio" /></a>
 <img src="docs/exemplos/redes-carrossel.webp" width="20%" alt="Carrossel 4:5" />
 <br/>
-<sub><b>Avatar apresentador</b>, <b>anúncio demonstrativo</b>, dois <b>cortes virais</b> (um narrado, outro tirado de uma gravação do Screen Studio) e um <b>carrossel</b>. Feitos com o método no ChatADV; estes tipos entram no kit na versão 2.2.</sub>
+<sub><b>Avatar apresentador</b>, <b>anúncio demonstrativo</b>, dois <b>cortes virais</b> (um narrado, outro tirado de uma gravação do Screen Studio) e um <b>carrossel</b>. Feitos com o método no ChatADV. O corte da gravação do Screen Studio já está no kit (2.2); os outros entram na 2.3.</sub>
 </div>
 
-Chegam na versão 2.2. O avatar é trocável: **Higgsfield** como principal (a pessoa e a voz saem juntas do gerador) e
+Avatar, anúncio e carrossel chegam na versão 2.3. O avatar é trocável: **Higgsfield** como principal (a pessoa e a voz saem juntas do gerador) e
 **HeyGen** como alternativa (o avatar fala sobre a voz da ElevenLabs, igual em todo vídeo). O avatar é apresentador,
 nunca depoimento de cliente. O gancho fala do ganho de quem assiste, nos 2 primeiros segundos.
 
@@ -125,7 +163,7 @@ nunca depoimento de cliente. O gancho fala do ganho de quem assiste, nos 2 prime
 As [skills de motion design da iart.ai](https://github.com/iart-ai/motion-design-skills) (MIT) já são instaladas junto
 e entram nos outros tipos: direção de arte, ritmo e composição nas aulas animadas, a paleta da sua marca, e corte no
 tempo da música nos vídeos curtos. A vinheta de marca (logo animado, abertura e encerramento) vira um tipo próprio,
-com modelo pronto no estúdio, na versão 2.2.
+com modelo pronto no estúdio, na versão 2.3.
 
 <br/>
 
@@ -144,7 +182,7 @@ computador, a voz e a revisão, e só para nos dois pontos em que a decisão é 
 6. **Entrega para a sua aprovação.** Aprovado, o vídeo vai para a pasta que você escolher e a montagem é apagada.
 
 <sub>Os dois portões são travas do estúdio, não combinados: o <code>narrar</code> recusa roteiro sem ok (ou mudado depois do
-ok) e o <code>montar</code> recusa fala sem revisão. Editar gravações suas (Screen Studio, Recordly, qualquer vídeo) chega na 2.3.</sub>
+ok) e o <code>montar</code> recusa fala sem revisão. Na gravação editada, os portões são o plano de edição e a revisão da fala editada. Gravações de outros apps (Recordly, qualquer vídeo) chegam na 2.4.</sub>
 
 <br/>
 
@@ -219,8 +257,25 @@ Tudo sai de um arquivo, `aulas/<id>.json`: o tipo, a duração escolhida, a fala
 `finalizar` e `fazer`. `finalizar --pagina` também gera as versões leves (H.264, AV1 com `+faststart` e pôster) para
 pôr numa página, e roda de novo sobre um vídeo já finalizado; sem render nenhum, ele para com "não há render".
 
+### A sua gravação, comando a comando
+
+A gravação editada tem o seu próprio roteiro, `edicoes/<id>.json` (o que sai da fala, as esperas, os trechos proibidos,
+as máscaras, os zooms, a ordem da híbrida, as cenas e os cortes em pé), e os comandos de `scripts/gravacao.py`:
+
+| Comando | O que faz | O que recusa |
+|---|---|---|
+| `novo <id> --projeto <pasta>` · `transcrever` · `texto` | lê o projeto do Screen Studio e transcreve a fala palavra a palavra | pasta que não é projeto do Screen Studio 4; gravação pausada |
+| `plano` · `emendas` | o plano de edição e a prova de cada corte | índice fora da fala; espera acelerada que cruza um trecho proibido |
+| `aprovar` | **portão 1**: o seu ok ao plano | plano que não é o do roteiro atual |
+| `audio` · `conferir` | a fala editada, transcrita de novo; `--aprovado` é o **portão 2** | corte sem prova; emenda duvidosa sem aceite; menos de 85% de semelhança |
+| `montar` · `hibrido` · `reels` | prepara a editada, a híbrida e os cortes em pé | fala em dois blocos; cena que entra numa palavra que você não disse; exportação que não bate com os cortes; corte em pé acima de 90 s |
+| `fatias --nome` | grava os cortes numa cópia do projeto, com a câmera em bolinha, para você exportar | sem o seu ok; dado sensível que apareceria; cópia que já existe |
+| `renderizar --versao` | renderiza em partes de 900 quadros (`--quadros` para uma prévia) | sem os dois portões; roteiro mudado depois de preparar; menos de 5 GB livres |
+| `entregar --destino` | copia os vídeos, as capas e as legendas e apaga a montagem | cópia que não bate de tamanho |
+
 Para provar que as travas do seu estúdio estão de pé: `python3 scripts/teste.py` (grátis, a voz é um tom gerado na
-hora). Ele tenta passar por cada portão sem o ok e falha se algum deixar.
+hora, e a gravação do Screen Studio é de mentira, com tons no lugar das palavras). Ele tenta passar por cada portão
+sem o ok e falha se algum deixar.
 
 <br/>
 
@@ -232,6 +287,7 @@ hora). Ele tenta passar por cada portão sem o ok e falha se algum deixar.
 | **claquete-marca** | lê o material da marca (pasta, HTML, `.md`, link), completa a marca e mostra uma amostra para aprovar |
 | **aula-animada** | aula didática de 2 a 5 minutos, sem mostrar ferramenta, com cenas no tempo da fala |
 | **tutorial-de-tela** | demonstração de ferramenta, dica, caso completo e trilha: roteiro de uso, plano de edição, gravação com o Playwright (cursor visível, dado borrado, texto proibido descarta a gravação) e narração com zoom e destaque |
+| **gravacao-editada** | a sua gravação do Screen Studio 4 editada, híbrida e em cortes em pé, com a sua voz: transcrição no computador, cada emenda provada e os dois portões |
 | **video-na-pagina** | publica o vídeo leve numa página ou central de ajuda: as versões, o pôster, a legenda e o HTML certo |
 | **motion design** (iart.ai) | `animation-principles`, `motion-art-direction`, `shot-composition`, `color-motion`, `motion-background`, `logo-animation`, `beat-sync-editing`, `remotion-video` e `after-effects`, instaladas junto (MIT) |
 
@@ -258,7 +314,7 @@ zoom (`"foco": [x0, y0, x1, y1]`) enquadra o que importa e escurece o resto, sem
 2. **Nada parado mais de 2,5 s.** Duas travas medem: uma no plano, outra no vídeo pronto.
 3. **A voz é conferida.** Errou, reescreve a frase. Não se afrouxa a trava.
 4. **Zoom não corta.** O foco entra inteiro na luz e o resto fica no escuro; confira cada zoom na folha de quadros.
-5. **Dado real não aparece.** Conta de teste, dado fictício, e a gravação se descarta sozinha se aparecer um texto que você marcou como proibido.
+5. **Dado real não aparece.** Conta de teste, dado fictício, e a gravação se descarta sozinha se aparecer um texto que você marcou como proibido. Na sua gravação, o trecho proibido congela a tela e a máscara cobre o dado.
 
 <br/>
 
@@ -285,8 +341,11 @@ vídeo novos, as telas animadas e as versões que vêm por aí.
 ## 💰 Custos e licenças
 
 - **Voz:** ElevenLabs, paga por uso. Uma aula de 2 minutos é o TTS de uns 2 mil caracteres.
+- **Gravação editada:** de graça. A voz é a sua, a transcrição roda no seu computador e a revisão é da sessão do Claude.
+  O [Screen Studio](https://screen.studio) é um app à parte, com a licença dele; a Claquete só lê o projeto e, para a
+  híbrida, escreve uma cópia com os cortes.
 - **Revisão da fala:** de graça. Quem revisa é a sessão do Claude; a transcrição, se instalada, roda na sua máquina.
-- **Avatar (versão 2.2):** pago ao provedor que você escolher. Na Higgsfield (Wan 3.0, 720p), uma tomada de 25 s custou US$ 2,00 a 2,60.
+- **Avatar (versão 2.3):** pago ao provedor que você escolher. Na Higgsfield (Wan 3.0, 720p), uma tomada de 25 s custou US$ 2,00 a 2,60.
 - **Remotion** (o renderizador): grátis para pessoas e empresas de até 3 pessoas; acima disso, [licença de empresa](https://www.remotion.dev/license).
 - **React Bits:** os componentes grátis são MIT + Commons Clause (use em qualquer projeto, inclusive comercial; só não
   revenda nem redistribua os componentes). O Pro segue a licença que você comprou. Nenhum dos dois vem neste repositório.

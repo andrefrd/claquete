@@ -7,8 +7,9 @@ description: >-
   de edição, na revisão da fala e na entrega. Use sempre que a pessoa disser "quero fazer um vídeo",
   "faz um vídeo", "vídeo para o Instagram", "vídeo para o YouTube", "Reels", "aula", "videoaula",
   "tutorial", "curso", "trilha", "demonstração", "demo do produto", "dica rápida", "vídeo de marca",
-  "vinheta", "anúncio em vídeo", "avatar", "editar minha gravação" ou "o que a Claquete faz", mesmo
-  sem dizer o tipo. Também responde com honestidade o que ainda não está pronto.
+  "vinheta", "anúncio em vídeo", "avatar", "editar minha gravação", "Screen Studio", "cortes para
+  Reels da minha gravação" ou "o que a Claquete faz", mesmo sem dizer o tipo. Também responde com
+  honestidade o que ainda não está pronto.
 metadata:
   resumo: Porta de entrada, com tipo, duração, marca e o fluxo de dois portões
 ---
@@ -24,9 +25,10 @@ a revisão da fala (**portão 2**) e a **entrega**.
 
 - O estúdio é a pasta com `kit.config.json` (o instalador cria `estudio-video/`). Todo comando roda
   de dentro dela.
-- `python3 scripts/kit.py versao` precisa dizer 2.0.0 ou mais. Disse 1.x, ou o comando `plano` não
-  existe? `npx github:dantaspaulo/claquete --atualizar` (mantém marca, roteiros, gravações, `.env`
-  e configuração).
+- `python3 scripts/kit.py versao` precisa dizer 2.0.0 ou mais (2.2.0 ou mais para editar uma
+  gravação da pessoa). Disse menos, ou o comando `plano` não existe?
+  `npx github:dantaspaulo/claquete --atualizar` (mantém marca, roteiros, gravações, `.env` e
+  configuração).
 - Sem estúdio: `npx github:dantaspaulo/claquete`. Precisa de Node 18 ou mais; o resto o instalador resolve.
 - A única chave é a `ELEVENLABS_API_KEY`, no `.env` do estúdio ou no ambiente. Não peça outra.
   Nunca escreva chave em arquivo do projeto.
@@ -79,6 +81,11 @@ pronta em cada item, para a pessoa só confirmar:
 | `exemplo` | só para testar o estúdio | 10 s a 5 min | · |
 
 Dica sem ferramenta (um conceito em um minuto): tipo `dica`, com as telas animadas da aula-animada.
+
+**A pessoa já gravou** (no Screen Studio 4, com tela, câmera e microfone) e quer o vídeo editado,
+uma versão com o raciocínio remontado ou cortes para Reels: não é tipo do `kit.py`, é a skill
+**gravacao-editada**, com `scripts/gravacao.py` (desde a 2.2). A voz é a dela, sem ElevenLabs; os
+dois portões são o plano de edição e a revisão da fala editada.
 
 Desde a 2.1, qualquer tipo pode ter telas `animada`: cenas em React com os componentes do React Bits que o instalador
 baixou nesta máquina, fotografadas no tempo da voz. É o visual das aulas do ChatADV; os detalhes estão na skill
@@ -173,13 +180,13 @@ Diga o que dá para fazer hoje e não prometa o resto.
 
 | Pedido | Chega na | O que dá hoje |
 |---|---|---|
-| Avatar apresentador (Higgsfield como principal, HeyGen como alternativa) | 2.2 | nenhum avatar. Uma dica ou demonstração em pé, narrada pela voz da marca. O provedor escolhido já fica em `marca.json` (`avatar`) |
-| Anúncio demonstrativo (em pé, sem pessoa, 20 a 35 s) | 2.2 | uma `dica` em pé (`--formatos v`) com o ganho de quem assiste na primeira frase; o piso da dica é 30 s |
-| Corte viral (uma gravação longa em vários Reels) | 2.2 | o em pé de qualquer vídeo do estúdio já sai com legenda palavra a palavra; tirar vários cortes de uma gravação, ainda não |
-| Carrossel e imagem 4:5 | 2.2 | ainda não: o estúdio só faz 16:9 e 9:16 |
-| Vinheta de marca | 2.2 | a skill logo-animation, com a remotion-video, pode montar uma vinheta curta à parte, fora das travas do estúdio; ela não entra sozinha no começo e no fim dos vídeos |
-| Editar as gravações da pessoa (Screen Studio, Recordly ou qualquer vídeo) | 2.3 | exportado em MP4, o vídeo entra como tela `video` numa demonstração: corte com `de`, aceleração com `velocidade`, zoom e a voz da ElevenLabs por cima. O som original não entra (a tela `video` é muda); cortar muletas da fala da pessoa, ainda não |
-| Instrução no celular | 2.3 | um site em tamanho de celular dá para gravar e narrar em pé; as telas do sistema do celular (instalar o app, liberar notificação), ainda não |
+| Avatar apresentador (Higgsfield como principal, HeyGen como alternativa) | 2.3 | nenhum avatar. Uma dica ou demonstração em pé, narrada pela voz da marca. O provedor escolhido já fica em `marca.json` (`avatar`) |
+| Anúncio demonstrativo (em pé, sem pessoa, 20 a 35 s) | 2.3 | uma `dica` em pé (`--formatos v`) com o ganho de quem assiste na primeira frase; o piso da dica é 30 s |
+| Corte viral de um vídeo que não é do Screen Studio (live, podcast, outro app) | 2.4 | da gravação do Screen Studio 4, já sai: skill gravacao-editada (`reels`); de outro vídeo, o em pé do estúdio com a voz da marca |
+| Carrossel e imagem 4:5 | 2.3 | ainda não: o estúdio só faz 16:9 e 9:16 |
+| Vinheta de marca | 2.3 | a skill logo-animation, com a remotion-video, pode montar uma vinheta curta à parte, fora das travas do estúdio; ela não entra sozinha no começo e no fim dos vídeos |
+| Editar gravação de outro app (Recordly ou qualquer vídeo) | 2.4 | do Screen Studio 4, já sai inteira (skill gravacao-editada). De outro app: exportado em MP4, o vídeo entra como tela `video` numa demonstração, com corte, aceleração, zoom e a voz da ElevenLabs por cima; o som original não entra |
+| Instrução no celular | 2.4 | um site em tamanho de celular dá para gravar e narrar em pé; as telas do sistema do celular (instalar o app, liberar notificação), ainda não |
 
 ## 8. A máquina
 

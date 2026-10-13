@@ -7,6 +7,7 @@
     "studio": "remotion studio src/index.ts",
     "tipos": "tsc --noEmit",
     "aula": "python3 scripts/kit.py fazer",
+    "gravacao": "python3 scripts/gravacao.py",
     "gravar": "node gravar/gravar.mjs"
   },
   "dependencies": {

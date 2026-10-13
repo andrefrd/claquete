@@ -7,6 +7,45 @@ Git (`vX.Y.Z`) e na página de versões do GitHub, sempre iguais.
 - **X.Y.0**: melhoria ou recurso novo que não quebra nada (2.1, 2.2...).
 - **X.Y.Z**: correção (2.1.1, 2.1.2...).
 
+## 2.2.0 · 13/10/2026
+
+Gravação editada: a sua gravação do Screen Studio 4 vira três vídeos, com a sua voz e sem abrir o app. Quem tem a 2.x
+atualiza com `npx github:dantaspaulo/claquete --atualizar`.
+
+- **Skill nova `gravacao-editada` e `scripts/gravacao.py`:** lê o projeto do Screen Studio 4 (tela, microfone, câmera,
+  cursor e cliques) sem mexer nele e transcreve a fala palavra a palavra no computador: com o transcritor que vem dentro
+  do Screen Studio 4 (a fala da Apple, macOS 26 ou mais novo) ou com a transcrição local do estúdio
+  (`CLAQUETE_TRANSCRITOR=whisper`, `scripts/palavras_whisper.py`). Nenhuma API.
+- **Versão editada:** cortes por palavra (muletas, repetições, frases erradas), pausas encolhidas, esperas aceleradas e
+  mudas com "▶▶ 4x" na tela, trecho proibido com a tela congelada por baixo da fala, máscaras por tempo, zoom com mola,
+  o cursor do macOS e os cliques desenhados pelo estúdio (o Screen Studio 4 grava a tela sem o cursor), câmera na
+  bolinha, abertura, chamadas, capítulos, legenda do que se ouve (`.srt` e `.vtt`) e o convite da marca.
+- **Cada emenda é provada:** a borda do corte vai para o silêncio pela energia do áudio (o transcritor emenda a pausa no
+  começo da palavra seguinte) e o `emendas` transcreve 1,6 s antes e 1,6 s depois de cada corte, testando outros pontos
+  de silêncio quando o primeiro não fica limpo. Cada transcrição vai com um nome de arquivo novo: o transcritor do Screen
+  Studio devolve o resultado guardado quando o caminho se repete.
+- **Versão híbrida:** a fala remontada em blocos numa ordem de raciocínio, com as telas prontas das aulas (capa, lista,
+  colunas, fluxo, frase, número, imagem) por cima da voz, cada item entrando na palavra dita, e a câmera na bolinha. O
+  `fatias` grava os cortes numa cópia do projeto (clone APFS no macOS), com a câmera em bolinha e a legenda do app
+  desligada; a pessoa exporta e o `hibrido --exportacao` usa a tela com o acabamento do Screen Studio. Sem a exportação, a
+  tela é desenhada pelo estúdio.
+- **Cortes em pé:** cada corte junta trechos numa narrativa (gancho, prova, convite) de até 90 s, a 1,3x; a tela num
+  cartão de 1080x1040 com zoom mais fechado, as cenas da híbrida em pé, legenda palavra a palavra, câmera no alto e o
+  gancho saindo antes de o título entrar.
+- **Dois portões:** o plano de edição (`plano`, `aprovar`: o que sai, a ordem da híbrida, as cenas, os textos e os cortes
+  em pé; zoom e câmera ficam fora do ok) e a fala editada (`conferir`: transcrita de novo e comparada com o texto
+  esperado; `--aprovado` recusa corte sem prova, emenda duvidosa sem aceite e menos de 85% de semelhança).
+- **Travas:** a cópia para o Screen Studio é recusada se fosse mostrar trecho proibido ou máscara sem uma cena por
+  cima; exportação que não bate com os cortes, a mesma fala em dois blocos, cena que entra numa palavra que a fala não
+  tem e corte em pé acima do máximo também. O projeto original nunca é escrito, e cópia que já existe não é sobrescrita.
+- **Render para máquina de disco curto:** em partes de 900 quadros, com a tela e a câmera cortadas por parte e já na
+  ordem da linha do tempo, número de quadros conferido em cada parte, e parada entre uma parte e outra se o disco
+  apertar. O `montar` avisa onde a tela fica mais de 2,5 s sem novidade.
+- **Testes:** 34 casos novos no `teste.py`, com uma gravação do Screen Studio de mentira (tons no lugar das palavras e um
+  transcritor que os reconhece), sem gastar nada; cada trava nova foi provada por mutação.
+- O instalador mantém `edicoes/` no `--atualizar`. Roteiro: **2.3** redes (avatar, anúncio demonstrativo, carrossel e
+  imagem 4:5) e vinheta de marca; **2.4** instrução no celular e gravações de outros apps (Recordly, qualquer vídeo).
+
 ## 2.1.0 · 09/10/2026
 
 Telas animadas: o visual das aulas do ChatADV agora sai de qualquer estúdio. Quem tem a 2.0 atualiza com

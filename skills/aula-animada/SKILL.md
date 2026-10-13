@@ -153,7 +153,7 @@ com o que já tem: tipo de tela, `quando`, fichas, zooms, cores e fundo.
 - **color-motion**: a paleta da marca com contraste (texto sobre a janela, destaque sobre o fundo) e
   os tons de apoio (detalhes na skill claquete-marca).
 - **logo-animation**: a vinheta da marca. Hoje fica à parte; o estúdio não a encaixa no começo e no
-  fim das aulas (o tipo vinheta chega na 2.2). O logo da marca já aparece no encerramento.
+  fim das aulas (o tipo vinheta chega na 2.3). O logo da marca já aparece no encerramento.
 - Ilustração, metáfora visual ou animação que os tipos prontos não fazem: use a tela `animada` (abaixo),
   não código novo em `src/cenas/` (o `--atualizar` do instalador troca a pasta `src/`).
 
