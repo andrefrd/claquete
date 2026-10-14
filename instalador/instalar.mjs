@@ -33,6 +33,7 @@ const VERSAO = JSON.parse(readFileSync(join(RAIZ, "package.json"), "utf8")).vers
 const PASTA_SKILLS = join(RAIZ, "skills");
 const PASTA_ESTUDIO = join(RAIZ, "estudio");
 const MOTION = { repo: "iart-ai/motion-design-skills", tar: "https://codeload.github.com/iart-ai/motion-design-skills/tar.gz/refs/heads/main" };
+const HAIRLINE = { repo: "lucasmarkes/hairline", skill: "hairline-create" };
 const SO = platform(); // darwin | linux | win32
 const args = process.argv.slice(2);
 const tem = (f) => args.includes(f);
@@ -116,6 +117,21 @@ function instalarMotion(destino) {
   }
   rmSync(tmp, { recursive: true, force: true });
   return nomes;
+}
+
+// A skill de figuras isométricas do @lucasmarkes/hairline (MIT): uma skill só, então vem pelo "npx skills",
+// que também põe o symlink do Claude Code. Sem o npx, a mensagem diz o comando.
+function instalarHairline(destino) {
+  if (!existe("npx")) {
+    nao(`hairline: preciso do npx; instale à mão: npx skills add ${HAIRLINE.repo} --skill ${HAIRLINE.skill}`);
+    return [];
+  }
+  const escopo = destino === global ? "--global" : "";
+  if (!roda(`npx -y skills add ${HAIRLINE.repo} --skill ${HAIRLINE.skill} -y ${escopo}`.trim(), undefined, false)) {
+    nao(`hairline: não consegui instalar ${HAIRLINE.repo} (sem internet?). Depois: npx skills add ${HAIRLINE.repo} --skill ${HAIRLINE.skill}`);
+    return [];
+  }
+  return [HAIRLINE.skill];
 }
 
 // ── React Bits nas telas animadas ───────────────────────────────────────────
@@ -400,6 +416,8 @@ async function main() {
   if (!tem("--sem-motion")) {
     const motion = instalarMotion(destino);
     if (motion.length) ok(`motion design (iart.ai, MIT): ${motion.join(", ")}`);
+    const hairline = instalarHairline(destino);
+    if (hairline.length) ok(`figuras isométricas (hairline, MIT): ${hairline.join(", ")}`);
   }
 
   // ── 2. estúdio ─────────────────────────────────────────────────────

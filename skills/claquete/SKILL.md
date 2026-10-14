@@ -168,6 +168,7 @@ fundo).
 | beat-sync-editing | vídeos curtos com música: cortes e zooms perto da batida |
 | logo-animation | vinheta da marca (hoje à parte, ver a seção 7) |
 | motion-background | fundo animado, só em peça à parte |
+| hairline-create | o desenho isométrico de linha (33 figuras do `@lucasmarkes/hairline`), para a tela `animada` que pede ilustração |
 | remotion-video | só quando for preciso mexer no código do estúdio (`src/`) |
 | after-effects | só se a pessoa trabalha no After Effects |
 

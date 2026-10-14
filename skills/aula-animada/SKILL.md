@@ -154,6 +154,9 @@ com o que já tem: tipo de tela, `quando`, fichas, zooms, cores e fundo.
   os tons de apoio (detalhes na skill claquete-marca).
 - **logo-animation**: a vinheta da marca. Hoje fica à parte; o estúdio não a encaixa no começo e no
   fim das aulas (o tipo vinheta chega na 2.3). O logo da marca já aparece no encerramento.
+- **hairline-create**: o desenho isométrico de linha, quando a tela `animada` pede uma figura e não
+  uma cena inteira. As 33 figuras do `@lucasmarkes/hairline` (MIT) já estão em `cenas/`; prefira a
+  peça pronta a desenhar do zero, e escreva uma figura nova só se nenhuma servir.
 - Ilustração, metáfora visual ou animação que os tipos prontos não fazem: use a tela `animada` (abaixo),
   não código novo em `src/cenas/` (o `--atualizar` do instalador troca a pasta `src/`).
 

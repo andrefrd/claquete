@@ -162,7 +162,9 @@ nunca depoimento de cliente. O gancho fala do ganho de quem assiste, nos 2 prime
 
 As [skills de motion design da iart.ai](https://github.com/iart-ai/motion-design-skills) (MIT) já são instaladas junto
 e entram nos outros tipos: direção de arte, ritmo e composição nas aulas animadas, a paleta da sua marca, e corte no
-tempo da música nos vídeos curtos. A vinheta de marca (logo animado, abertura e encerramento) vira um tipo próprio,
+tempo da música nos vídeos curtos. Junto vem a
+[hairline](https://github.com/lucasmarkes/hairline) (MIT), as figuras isométricas de linha para as telas que pedem
+ilustração. A vinheta de marca (logo animado, abertura e encerramento) vira um tipo próprio,
 com modelo pronto no estúdio, na versão 2.3.
 
 <br/>
@@ -290,6 +292,7 @@ sem o ok e falha se algum deixar.
 | **gravacao-editada** | a sua gravação do Screen Studio 4 editada, híbrida e em cortes em pé, com a sua voz: transcrição no computador, cada emenda provada e os dois portões |
 | **video-na-pagina** | publica o vídeo leve numa página ou central de ajuda: as versões, o pôster, a legenda e o HTML certo |
 | **motion design** (iart.ai) | `animation-principles`, `motion-art-direction`, `shot-composition`, `color-motion`, `motion-background`, `logo-animation`, `beat-sync-editing`, `remotion-video` e `after-effects`, instaladas junto (MIT) |
+| **hairline** (lucasmarkes) | `hairline-create`: desenha uma figura isométrica de linha para a tela `animada` do estúdio, no estilo e no motor do `@lucasmarkes/hairline`, entregue como uma página só (MIT) |
 
 ### Telas prontas
 
