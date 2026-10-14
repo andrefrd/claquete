@@ -429,8 +429,9 @@ async function main() {
     const cfgAtual = [
       valor("--estudio") && join(resolve(valor("--estudio")), "kit.config.json"),
       join(process.cwd(), "estudio-video", "kit.config.json"),
-      join(RAIZ, "estudio", "kit.config.json"),
-    ].filter(Boolean).find((f) => existsSync(f));
+      // o kit.config.json do próprio pacote (estudio/) é o MODELO, não um estúdio da pessoa: se entrasse
+      // aqui, toda instalação nova herdaria o pt-BR dele e a pergunta de idioma nunca apareceria.
+    ].filter(Boolean).filter((f) => resolve(f) !== join(PASTA_ESTUDIO, "kit.config.json")).find((f) => existsSync(f));
     if (cfgAtual) {
       try {
         idioma = normaliza(JSON.parse(readFileSync(cfgAtual, "utf8")).idioma) || null;

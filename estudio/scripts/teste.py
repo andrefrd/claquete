@@ -387,23 +387,28 @@ def testes_idioma(raiz, tmp):
 
     # As skills existem nos dois idiomas e com os MESMOS nomes de pasta: é por eles que o instalador
     # instala, o --desinstalar remove e a skill de entrada chama as outras.
-    pt = {d.name for d in (repo / "skills").iterdir() if (d / "SKILL.md").exists()}
-    en = {d.name for d in (repo / "skills-en").iterdir() if (d / "SKILL.md").exists()} if (repo / "skills-en").exists() else set()
-    confere("skills-en/ traz as mesmas skills de skills/, com os mesmos nomes",
-            en == pt and len(pt) > 0)
-    faltando = sorted(pt - en)
-    faltando and print("           faltam em skills-en/:", ", ".join(faltando))
+    # (Só no repositório da Claquete: no estúdio de quem instalou não existem skills/ nem skills-en/.)
+    if (repo / "skills").is_dir():
+        pt = {d.name for d in (repo / "skills").iterdir() if (d / "SKILL.md").exists()}
+        en = {d.name for d in (repo / "skills-en").iterdir() if (d / "SKILL.md").exists()} if (repo / "skills-en").exists() else set()
+        confere("skills-en/ traz as mesmas skills de skills/, com os mesmos nomes",
+                en == pt and len(pt) > 0)
+        faltando = sorted(pt - en)
+        faltando and print("           faltam em skills-en/:", ", ".join(faltando))
 
-    # Toda SKILL.md em inglês precisa do `metadata.resumo`, que o instalador imprime no terminal.
-    sem_resumo = [d.name for d in (repo / "skills-en").iterdir()
-                  if (d / "SKILL.md").exists() and not re.search(r"^\s+resumo:\s*\S", (d / "SKILL.md").read_text(encoding="utf-8"), re.M)] if (repo / "skills-en").exists() else []
-    confere("toda skill em inglês tem o resumo que o instalador mostra", sem_resumo == [])
+        # Toda SKILL.md em inglês precisa do `metadata.resumo`, que o instalador imprime no terminal.
+        sem_resumo = [d.name for d in (repo / "skills-en").iterdir()
+                      if (d / "SKILL.md").exists() and not re.search(r"^\s+resumo:\s*\S", (d / "SKILL.md").read_text(encoding="utf-8"), re.M)] if (repo / "skills-en").exists() else []
+        confere("toda skill em inglês tem o resumo que o instalador mostra", sem_resumo == [])
+    else:
+        print("pulado  skills-en/ (fora do repositório da Claquete)")
 
     # O pt-BR de hoje continua sendo o padrão, e o encanamento não pode ter mexido nisso.
     c = json.loads(arq.read_text(encoding="utf-8"))
-    confere("o estúdio nasce em pt-BR", c.get("idioma") == "pt-BR")
+    no_repo = (repo / "skills").is_dir()  # fora dele, a pessoa pode ter trocado voz, pronúncia e convite
+    confere("o estúdio do teste roda em pt-BR", c.get("idioma") == "pt-BR")
     confere("o conteúdo pt-BR continua no topo (voz, pronúncia, convite)",
-            c["voz"]["elevenlabs"]["nome"] == "Raquel" and "IA" in c["pronuncia"] and c["convite"]["titulo"])
+            all(k in c for k in ("voz", "pronuncia", "convite")) and (not no_repo or (c["voz"]["elevenlabs"]["nome"] == "Raquel" and "IA" in c["pronuncia"])))
 
     # A assinatura da narração NÃO pode mudar em pt-BR: mudar invalidaria toda narração já paga e a
     # pessoa pagaria de novo pelo mesmo áudio. Este é o teste que protege o bolso dela.
@@ -428,10 +433,11 @@ def testes_idioma(raiz, tmp):
     # Trocar para en-US muda voz, convite, pronúncia e o locale da transcrição — e SÓ isso: as
     # constantes de língua mudam o valor, não a forma, para o hash voltar a bater ao voltar o idioma.
     en = dict(c, idioma="en-US")
-    confere("em en-US a voz é a outra, com voice_id e dono próprios",
-            k.voz(en)["elevenlabs"]["nome"] == "Lauren" and k.voz(en)["elevenlabs"]["voice_id"] != c["voz"]["elevenlabs"]["voice_id"]
-            and k.voz(en)["elevenlabs"].get("dono_publico"))
-    confere("em en-US o convite é o inglês", k.convite(en)["titulo"] != k.convite(c)["titulo"])
+    confere("em en-US a voz é outra, com voice_id próprio",
+            k.voz(en)["elevenlabs"]["voice_id"] != c["voz"]["elevenlabs"]["voice_id"]
+            and (not no_repo or (k.voz(en)["elevenlabs"]["nome"] == "Lauren" and k.voz(en)["elevenlabs"].get("dono_publico"))))
+    if no_repo:
+        confere("em en-US o convite é o inglês", k.convite(en)["titulo"] != k.convite(c)["titulo"])
     confere("em en-US a transcrição sai em inglês", k.lin(en, "transcricao")[1] == "en")
     confere("em en-US as muletas são as inglesas", "like" in k.lin(en, "muletas") and "né" not in k.lin(en, "muletas"))
     confere("em en-US a busca de sigla não usa a classe acentuada do português",
@@ -461,6 +467,12 @@ def main():
     tmp = Path(tempfile.mkdtemp())
     raiz = tmp / "estudio"
     shutil.copytree(ESTUDIO, raiz, ignore=shutil.ignore_patterns("node_modules", ".venv", "saida", "aulas", "edicoes", "public", "dist", "react-bits"))
+    # As travas não dependem de idioma, mas as conferências abaixo casam as mensagens em português: num estúdio
+    # instalado em inglês, a CÓPIA do teste roda em pt-BR (o estúdio da pessoa não é tocado).
+    cfg_copia = json.loads((raiz / "kit.config.json").read_text(encoding="utf-8"))
+    if cfg_copia.get("idioma", "pt-BR") != "pt-BR":
+        cfg_copia["idioma"] = "pt-BR"
+        (raiz / "kit.config.json").write_text(json.dumps(cfg_copia, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     (raiz / "cenas" / "src" / "aulas").mkdir(parents=True, exist_ok=True)
     shutil.copy(ESTUDIO / "cenas" / "src" / "aulas" / "animada-exemplo.jsx", raiz / "cenas" / "src" / "aulas" / "animada-exemplo.jsx")
     (raiz / "aulas").mkdir()

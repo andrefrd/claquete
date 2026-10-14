@@ -1103,34 +1103,38 @@ def cmd_plano(r):
     gravar(d.parent / "texto-final.txt", " ".join(ws[i]["w"] for i in plano["fica"]) + "\n")
     emendas = emendas_validas(r, ws)
     erros = []
-    md = [f"# Plano de edição: {r.get('titulo') or r['_id']}", "",
-          f"- Gravação: {plano['fim_total'] / 60:.1f} min → **vídeo editado: {plano['quadros'] / FPS / 60:.1f} min** "
-          f"({plano['quadros'] / FPS:.0f} s), {len(plano['fica'])} palavras ficam.",
-          f"- Esperas aceleradas: {len(r.get('acelerar', []))}; trechos que saem pelo tempo: {len(r.get('remover_tempo', []))}; "
-          f"tela congelada por dado sensível: {len(r.get('proibidos', []))}; máscaras: {len(r.get('mascaras', []))}; zooms: {len(r.get('zooms', []))}.",
-          "", "## O que sai da fala", ""]
+    cfg_ = K.cfg()
+    tr = lambda pt, en: K.M.tr(cfg_, pt, en)  # o plano é o que a pessoa lê para dar o ok: sai no idioma dela
+    md = [tr("# Plano de edição: ", "# Edit plan: ") + f"{r.get('titulo') or r['_id']}", "",
+          tr("- Gravação: ", "- Recording: ") + f"{plano['fim_total'] / 60:.1f} min → " + tr("**vídeo editado: ", "**edited video: ")
+          + f"{plano['quadros'] / FPS / 60:.1f} min** ({plano['quadros'] / FPS:.0f} s), {len(plano['fica'])}" + tr(" palavras ficam.", " words stay."),
+          tr("- Esperas aceleradas: ", "- Sped-up waits: ") + f"{len(r.get('acelerar', []))}" + tr("; trechos que saem pelo tempo: ", "; stretches cut by time: ")
+          + f"{len(r.get('remover_tempo', []))}" + tr("; tela congelada por dado sensível: ", "; screen frozen for sensitive data: ")
+          + f"{len(r.get('proibidos', []))}" + tr("; máscaras: ", "; masks: ") + f"{len(r.get('mascaras', []))}; zooms: {len(r.get('zooms', []))}.",
+          "", tr("## O que sai da fala", "## What comes out of the narration"), ""]
     for i, j in r.get("remover", []):
         antes = " ".join(ws[k]["w"] for k in range(max(0, i - 4), i) if k in fica)
         depois = " ".join(ws[k]["w"] for k in range(j + 1, min(len(ws), j + 5)) if k in fica)
         e = emendas.get((i, j))
-        prova = "sem prova ainda" if not e else (f"emenda provada ({e['nota']})" if e["nota"] >= NOTA_EMENDA else f"emenda a ouvir ({e['nota']})")
+        prova = tr("sem prova ainda", "not proven yet") if not e else (tr("emenda provada", "splice proven") + f" ({e['nota']})" if e["nota"] >= NOTA_EMENDA else tr("emenda a ouvir", "splice to listen to") + f" ({e['nota']})")
         md.append(f"- {mmss(ws[i]['s'])} «{antes} ~~{' '.join(ws[k]['w'] for k in range(i, j + 1))}~~ {depois}» · {prova}")
     sobrou = [(ws[i]["w"], ws[i]["s"]) for i in plano["fica"] if bruta(ws[i]["w"]) in {bruta(m) for m in muletas_de(r)}]
     if sobrou:
-        md += ["", "**Muletas que ficaram:** " + ", ".join(f"{w} ({mmss(s)})" for w, s in sobrou)]
+        md += ["", tr("**Muletas que ficaram:** ", "**Filler words left in:** ") + ", ".join(f"{w} ({mmss(s)})" for w, s in sobrou)]
     if plano["parciais"]:
-        md += ["", "**Palavras com um pedaço cortado (ouvir):** " + ", ".join(f"{ws[i]['w']} ({mmss(ws[i]['s'])})" for i in plano["parciais"])]
+        md += ["", tr("**Palavras com um pedaço cortado (ouvir):** ", "**Words with a piece cut off (listen):** ") + ", ".join(f"{ws[i]['w']} ({mmss(ws[i]['s'])})" for i in plano["parciais"])]
     textos = r.get("chamadas", []) + r.get("capitulos", [])
     if textos or r.get("abertura"):
-        md += ["", "## Texto na tela (versão editada)", ""]
+        md += ["", tr("## Texto na tela (versão editada)", "## On-screen text (edited version)"), ""]
         if r.get("abertura"):
             md.append(f"- Abertura: «{r['abertura'].get('titulo', '')}» {r['abertura'].get('sub', '')}")
-        md += [f"- Em {mmss(c['em'])}: «{c.get('texto', '')}»" for c in sorted(textos, key=lambda x: x["em"])]
+        md += [tr("- Em ", "- At ") + f"{mmss(c['em'])}: «{c.get('texto', '')}»" for c in sorted(textos, key=lambda x: x["em"])]
     if r.get("hibrido"):
         try:
             linha, fora, total_ss = linha_hibrida(r, plano, en)
-            md += ["", "## Versão híbrida: a fala na ordem nova", "",
-                   f"{linha[-1]['q1'] / FPS / 60:.1f} min. A tela sai do Screen Studio (gravacao.py fatias) e as cenas entram por cima da voz.", ""]
+            md += ["", tr("## Versão híbrida: a fala na ordem nova", "## Hybrid version: the narration in the new order"), "",
+                   f"{linha[-1]['q1'] / FPS / 60:.1f} min. " + tr("A tela sai do Screen Studio (gravacao.py fatias) e as cenas entram por cima da voz.",
+                                                                 "The screen comes from Screen Studio (gravacao.py fatias) and the scenes come in over the voice."), ""]
             for b in r["hibrido"]["blocos"]:
                 pecas = [t for t in linha if t["bloco"] == (b.get("nome") or f"{b['de']}-{b['ate']}")]
                 if not pecas:
@@ -1138,28 +1142,28 @@ def cmd_plano(r):
                 texto = " ".join(ws[i]["w"] for t in pecas for i in plano["fica"] if t["ini"] <= plano["ataque"][str(i)] < t["fim"])
                 md.append(f"1. **{b.get('nome', '')}** ({(pecas[-1]['q1'] - pecas[0]['q0']) / FPS:.0f} s): «{texto[:180]}{'…' if len(texto) > 180 else ''}»")
             if fora:
-                md += ["", f"**Fica de fora da híbrida** ({sum(b - a for a, b in fora):.0f} s de fala):", ""]
+                md += ["", tr("**Fica de fora da híbrida**", "**Left out of the hybrid**") + f" ({sum(b - a for a, b in fora):.0f} s" + tr(" de fala):", " of narration):"), ""]
                 md += [f"- {mmss(a)}: «{' '.join(ws[i]['w'] for i in plano['fica'] if a <= plano['ataque'][str(i)] < b)}»" for a, b in fora]
             for c in r["hibrido"].get("cenas", []):
-                md.append(f"- Cena de {mmss(c['de'])} a {mmss(c['ate'])}: {descreve_tela(c.get('tela', {}))}")
+                md.append(tr("- Cena de ", "- Scene from ") + f"{mmss(c['de'])}" + tr(" a ", " to ") + f"{mmss(c['ate'])}: {descreve_tela(c.get('tela', {}))}")
             for c in r["hibrido"].get("chamadas", []) + r["hibrido"].get("capitulos", []):
-                md.append(f"- Na tela em {mmss(c['em'])}: «{c.get('texto', '')}»")
+                md.append(tr("- Na tela em ", "- On screen at ") + f"{mmss(c['em'])}: «{c.get('texto', '')}»")
         except Erro as e:
             erros.append(str(e))
     if r.get("reels"):
         vel = r["reels"].get("velocidade", 1.3)
-        md += ["", f"## Cortes em pé (a {vel}x)", ""]
+        md += ["", tr("## Cortes em pé (a ", "## Vertical cuts (at ") + f"{vel}x)", ""]
         for c in r["reels"].get("cortes", []):
             try:
                 linha = linha_reel(plano, c, vel, en)
                 seg = linha[-1]["q1"] / FPS
                 texto = " ".join(ws[i]["w"] for t in linha for i in plano["fica"] if t["ini"] <= plano["ataque"][str(i)] < t["fim"])
-                md.append(f"- **{c['id']}** ({seg:.0f} s) gancho «{c.get('gancho', '')}», título «{c.get('titulo', '')}»: «{texto[:220]}…»")
+                md.append(f"- **{c['id']}** ({seg:.0f} s) " + tr("gancho", "hook") + f" «{c.get('gancho', '')}», " + tr("título", "title") + f" «{c.get('titulo', '')}»: «{texto[:220]}…»")
                 if seg > r["reels"].get("max_segundos", REEL_MAXIMO):
                     erros.append(f"o corte {c['id']} tem {seg:.0f} s (máximo {r['reels'].get('max_segundos', REEL_MAXIMO)})")
             except Erro as e:
                 erros.append(str(e))
-    md += ["", "## O texto que fica", "", " ".join(ws[i]["w"] for i in plano["fica"]), ""]
+    md += ["", tr("## O texto que fica", "## The text that stays"), "", " ".join(ws[i]["w"] for i in plano["fica"]), ""]
     gravar(d.parent / "plano-de-edicao.md", "\n".join(md))
     print(f"  {plano['fim_total']:.0f} s → {plano['quadros'] / FPS:.1f} s; {len(plano['trechos'])} trechos; plano em "
           f"{(d.parent / 'plano-de-edicao.md')}")

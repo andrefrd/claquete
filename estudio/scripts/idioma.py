@@ -131,6 +131,12 @@ def t(c, chave, **kw):
     return texto.format(**kw) if kw else texto
 
 
+def tr(c, pt, en):
+    """O texto do idioma ativo, escrito no lugar em que é usado (para títulos de relatório, em que o par
+    lado a lado se lê melhor que uma chave no catálogo). Idioma sem tradução cai no pt-BR."""
+    return en if tag(c) == "en-US" else pt
+
+
 def chaves_diferentes():
     """Chaves que existem num idioma e faltam no outro. O teste usa isto; vazio é o esperado."""
     base = set(TEXTO[PADRAO])

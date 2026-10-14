@@ -293,47 +293,51 @@ def plano_md(id_):
     a, c = aula(id_), cfg()
     erros, avisos = validar(id_)
     linhas = [f"# {a.get('titulo', id_)}", "",
-              f"**Tipo:** {a.get('tipo', '?')}" + (f" · **duração escolhida:** {a['minutos']} min" if a.get("minutos") else "")
-              + f" · **estimada:** {estimativa(a, c) / 60:.1f} min · **partes:** {len(a.get('partes', []))}", ""]
+              M.tr(c, "**Tipo:** ", "**Type:** ") + f"{a.get('tipo', '?')}"
+              + (M.tr(c, " · **duração escolhida:** ", " · **chosen duration:** ") + f"{a['minutos']} min" if a.get("minutos") else "")
+              + M.tr(c, " · **estimada:** ", " · **estimated:** ") + f"{estimativa(a, c) / 60:.1f} min"
+              + M.tr(c, " · **partes:** ", " · **parts:** ") + f"{len(a.get('partes', []))}", ""]
     if a.get("caminho"):
-        linhas += ["## Caminho na ferramenta (o que será gravado)", ""] + [f"{k}. {passo}" for k, passo in enumerate(a["caminho"], 1)] + [""]
+        linhas += [M.tr(c, "## Caminho na ferramenta (o que será gravado)", "## Path through the tool (what will be recorded)"), ""] + [f"{k}. {passo}" for k, passo in enumerate(a["caminho"], 1)] + [""]
     for i, p in enumerate(a.get("partes", []), 1):
         t = p.get("tela", {})
         linhas += [f"## {i}. {p.get('rotulo') or t.get('titulo') or ''}".rstrip(), "", f"> {p.get('fala', '')}", ""]
-        tela = f"**Tela:** {t.get('tipo')}"
+        tela = M.tr(c, "**Tela:** ", "**Screen:** ") + f"{t.get('tipo')}"
         if t.get("titulo"):
             tela += f" · {t['titulo'].replace('*', '')}"
         linhas.append(tela)
         for campo in ("itens", "passos"):
             for it in t.get(campo, []):
                 txt = it.get("texto") if isinstance(it, dict) else it
-                quando = f" (entra em \"{it['quando']}\")" if isinstance(it, dict) and it.get("quando") else ""
+                quando = M.tr(c, " (entra em ", " (comes in on ") + f"\"{it['quando']}\")" if isinstance(it, dict) and it.get("quando") else ""
                 linhas.append(f"- {txt}{quando}")
         if t.get("tipo") == "animada":
-            linhas.append(f"**Cena animada** ({componente_cena(t, i)}): {t.get('descricao', '')}")
+            linhas.append(M.tr(c, "**Cena animada**", "**Animated scene**") + f" ({componente_cena(t, i)}): {t.get('descricao', '')}")
         if t.get("tipo") in ("video", "imagem"):
-            linhas.append(f"**Plano de edição:** arquivo `{t.get('arquivo')}`"
-                          + (f", começa em {t['de']} s" if t.get("de") is not None else "")
-                          + (f", velocidade {t['velocidade']}x" if t.get("velocidade") else ""))
+            linhas.append(M.tr(c, "**Plano de edição:** arquivo ", "**Edit plan:** file ") + f"`{t.get('arquivo')}`"
+                          + (M.tr(c, ", começa em ", ", starts at ") + f"{t['de']} s" if t.get("de") is not None else "")
+                          + (M.tr(c, ", velocidade ", ", speed ") + f"{t['velocidade']}x" if t.get("velocidade") else ""))
             for z in t.get("zooms", []):
-                linhas.append(f"- zoom em {z.get('foco')} de \"{z.get('quando')}\"" + (f" até \"{z['ate']}\"" if z.get("ate") else ""))
+                linhas.append(M.tr(c, "- zoom em ", "- zoom on ") + f"{z.get('foco')}" + M.tr(c, " de ", " from ") + f"\"{z.get('quando')}\""
+                              + (M.tr(c, " até ", " to ") + f"\"{z['ate']}\"" if z.get("ate") else ""))
         for ch in t.get("chips", []):
-            linhas.append(f"- ficha \"{ch.get('texto')}\" em \"{ch.get('quando')}\"")
+            linhas.append(M.tr(c, "- ficha ", "- chip ") + f"\"{ch.get('texto')}\"" + M.tr(c, " em ", " on ") + f"\"{ch.get('quando')}\"")
         linhas.append("")
     gravar = sorted({re.search(r"arquivo (\S+)", x).group(1) for x in avisos if "grave depois" in x})
     escrever = [re.sub(r"^parte (\d+): a cena (\w+) .*", r"parte \1: \2", x) for x in avisos if "escreva depois" in x]
     outros = [x for x in avisos if "grave depois" not in x and "escreva depois" not in x]
     if gravar:
-        linhas += ["## A gravar depois do ok", ""] + [f"- `{g}`" for g in gravar] + [""]
+        linhas += [M.tr(c, "## A gravar depois do ok", "## To record after the go-ahead"), ""] + [f"- `{g}`" for g in gravar] + [""]
     if escrever:
-        linhas += ["## Cenas animadas a escrever depois do ok", ""] + [f"- {e}" for e in escrever] + [""]
+        linhas += [M.tr(c, "## Cenas animadas a escrever depois do ok", "## Animated scenes to write after the go-ahead"), ""] + [f"- {e}" for e in escrever] + [""]
     if erros or outros:
-        linhas += ["## A resolver antes do ok", ""] + [f"- ERRO: {x}" for x in erros] + [f"- aviso: {x}" for x in outros] + [""]
-    linhas += ["---", f"Para aprovar: `python3 scripts/kit.py aprovar {id_}`. Qualquer mudança depois pede um ok novo."]
+        linhas += [M.tr(c, "## A resolver antes do ok", "## To fix before the go-ahead"), ""] + [M.tr(c, "- ERRO: ", "- ERROR: ") + x for x in erros] + [M.tr(c, "- aviso: ", "- warning: ") + x for x in outros] + [""]
+    linhas += ["---", M.tr(c, f"Para aprovar: `python3 scripts/kit.py aprovar {id_}`. Qualquer mudança depois pede um ok novo.",
+                         f"To approve: `python3 scripts/kit.py aprovar {id_}`. Any change afterwards needs a new go-ahead.")]
     destino = SAIDA / id_ / "roteiro-e-plano.md"
     destino.parent.mkdir(parents=True, exist_ok=True)
     destino.write_text("\n".join(linhas) + "\n", encoding="utf-8")
-    print(f"  roteiro e plano de edição: {destino}")
+    print(M.tr(c, "  roteiro e plano de edição: ", "  script and edit plan: ") + f"{destino}")
     for x in avisos:
         print("  aviso:", x)
     for x in erros:
