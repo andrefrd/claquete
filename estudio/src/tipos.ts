@@ -47,6 +47,10 @@ export type Tema = {
 
 export type Plano = {
   id: string;
+  // Opcionais porque o indice.gen.ts carrega planos.json antigos, gerados antes da 2.3: um campo
+  // obrigatorio so viraria quebra em tempo de render, que ninguem confere com o tsc.
+  idioma?: string;
+  legenda?: { max_letras?: { h?: number; v?: number } };
   titulo: string;
   cabecalho: string;
   formatos: ("h" | "v")[];

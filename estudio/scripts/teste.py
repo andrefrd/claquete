@@ -6,8 +6,10 @@
 
 Cada caso aqui é uma promessa do README: roteiro sem ok não narra, fala sem revisão não monta, a duração escolhida vale,
 o roteiro mudado pede ok novo e a entrega só apaga a montagem depois de conferir a cópia."""
+import hashlib
 import importlib.util
 import json
+import re
 import shutil
 import subprocess
 import sys
@@ -376,6 +378,79 @@ def carregar_gravacao(raiz):
     return m
 
 
+# ── o idioma (2.3): o pt-BR é o padrão e não se move; o en-US vive em linguas.en-US ─────────────────────────
+
+def testes_idioma(raiz, tmp):
+    repo = ESTUDIO.parent
+    k = carregar_kit(raiz)
+    arq = raiz / "kit.config.json"
+
+    # As skills existem nos dois idiomas e com os MESMOS nomes de pasta: é por eles que o instalador
+    # instala, o --desinstalar remove e a skill de entrada chama as outras.
+    pt = {d.name for d in (repo / "skills").iterdir() if (d / "SKILL.md").exists()}
+    en = {d.name for d in (repo / "skills-en").iterdir() if (d / "SKILL.md").exists()} if (repo / "skills-en").exists() else set()
+    confere("skills-en/ traz as mesmas skills de skills/, com os mesmos nomes",
+            en == pt and len(pt) > 0)
+    faltando = sorted(pt - en)
+    faltando and print("           faltam em skills-en/:", ", ".join(faltando))
+
+    # Toda SKILL.md em inglês precisa do `metadata.resumo`, que o instalador imprime no terminal.
+    sem_resumo = [d.name for d in (repo / "skills-en").iterdir()
+                  if (d / "SKILL.md").exists() and not re.search(r"^\s+resumo:\s*\S", (d / "SKILL.md").read_text(encoding="utf-8"), re.M)] if (repo / "skills-en").exists() else []
+    confere("toda skill em inglês tem o resumo que o instalador mostra", sem_resumo == [])
+
+    # O pt-BR de hoje continua sendo o padrão, e o encanamento não pode ter mexido nisso.
+    c = json.loads(arq.read_text(encoding="utf-8"))
+    confere("o estúdio nasce em pt-BR", c.get("idioma") == "pt-BR")
+    confere("o conteúdo pt-BR continua no topo (voz, pronúncia, convite)",
+            c["voz"]["elevenlabs"]["nome"] == "Raquel" and "IA" in c["pronuncia"] and c["convite"]["titulo"])
+
+    # A assinatura da narração NÃO pode mudar em pt-BR: mudar invalidaria toda narração já paga e a
+    # pessoa pagaria de novo pelo mesmo áudio. Este é o teste que protege o bolso dela.
+    fala = "Primeiro, diga quem você é e para quem é o texto."
+    original = hashlib.sha256(json.dumps([fala, c["voz"],
+                                          {kk: vv for kk, vv in c["pronuncia"].items()
+                                           if not kk.startswith("_") and re.search(rf"(?<!\w){re.escape(kk)}(?!\w)", fala)}],
+                                         sort_keys=True).encode()).hexdigest()[:16]
+    confere("a assinatura da narração em pt-BR continua a mesma (ninguém paga áudio de novo)",
+            k.assinatura_parte(fala, c) == original)
+
+    # Os catálogos de mensagem: as duas metades têm de ter as mesmas chaves, senão uma cai no português
+    # no meio de uma execução em inglês.
+    import idioma as M
+    confere("os catálogos de mensagem têm as mesmas chaves nos dois idiomas", M.chaves_diferentes() == {})
+    confere("o pt-BR de hoje continua no catálogo (o teste é a rede de regressão)",
+            M.t(c, "montar_plano", n=3, total=12.5).startswith("  plano:") and "portao_roteiro" in M.TEXTO["pt-BR"])
+    confere("o en-US tem texto próprio, não uma cópia do português",
+            M.TEXTO["en-US"]["portao_roteiro"] != M.TEXTO["pt-BR"]["portao_roteiro"]
+            and "aprovado" not in M.TEXTO["en-US"]["portao_roteiro"])
+
+    # Trocar para en-US muda voz, convite, pronúncia e o locale da transcrição — e SÓ isso: as
+    # constantes de língua mudam o valor, não a forma, para o hash voltar a bater ao voltar o idioma.
+    en = dict(c, idioma="en-US")
+    confere("em en-US a voz é a outra, com voice_id e dono próprios",
+            k.voz(en)["elevenlabs"]["nome"] == "Lauren" and k.voz(en)["elevenlabs"]["voice_id"] != c["voz"]["elevenlabs"]["voice_id"]
+            and k.voz(en)["elevenlabs"].get("dono_publico"))
+    confere("em en-US o convite é o inglês", k.convite(en)["titulo"] != k.convite(c)["titulo"])
+    confere("em en-US a transcrição sai em inglês", k.lin(en, "transcricao")[1] == "en")
+    confere("em en-US as muletas são as inglesas", "like" in k.lin(en, "muletas") and "né" not in k.lin(en, "muletas"))
+    confere("em en-US a busca de sigla não usa a classe acentuada do português",
+            k.lin(en, "sigla") != k.lin(c, "sigla") and re.fullmatch(k.lin(en, "sigla"), "IA") is not None)
+    confere("a voz de testar a voz muda com o idioma", k.lin(en, "voz_teste") != k.lin(c, "voz_teste"))
+    confere("trocar de idioma muda a assinatura da narração (a parte é narrada de novo, na voz nova)",
+            k.assinatura_parte(fala, en) != k.assinatura_parte(fala, c))
+
+    # Um roteiro de edição criado agora já nasce com o locale do estúdio (era pt_BR fixo: inglês sairia
+    # transcrito como português, sem erro nenhum).
+    import importlib.util as iu
+    spec = iu.spec_from_file_location("gravacao_idioma", raiz / "scripts" / "gravacao.py")
+    g = iu.module_from_spec(spec)
+    spec.loader.exec_module(g)
+    confere("o roteiro de edição nasce no idioma do estúdio", g.MODELO["idioma"] == "pt_BR" and "idioma" in g.MODELO)
+    confere("com o estúdio em inglês, o roteiro de edição nasce em inglês",
+            g.K.lin(en, "transcricao")[0] == "en_US")
+
+
 def main():
     if "--licenca" in sys.argv:
         ruins = licenca_react_bits(sys.argv[sys.argv.index("--licenca") + 1:])
@@ -571,6 +646,8 @@ def main():
         confere("render recusa com o disco quase cheio", "livres" in str(e))
 
     testes_gravacao(raiz, tmp)
+
+    testes_idioma(raiz, tmp)
 
     shutil.rmtree(tmp, ignore_errors=True)
     print(f"\n{'TUDO CERTO' if not falhas else str(len(falhas)) + ' FALHA(S)'}")

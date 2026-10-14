@@ -61,7 +61,12 @@ CONVITE_REEL = 2.6
 REEL_MAXIMO = 90
 TELAS_CENA = {"capa", "lista", "colunas", "fluxo", "frase", "numero", "imagem"}
 PAUSAS = {"limiar_db": -42, "voz_db": -43, "minima": 0.40, "sobra": 0.13}
-MULETAS = ["né", "ó", "certo", "enfim", "tipo", "hum"]
+# As muletas são do IDIOMA (scripts/idioma.py): em inglês são outras, e a lista do português aplicada a uma
+# fala inglesa não acha nada. O roteiro da edição pode sobrescrever com a chave "muletas".
+def muletas_de(r, c=None):
+    if r.get("muletas"):
+        return r["muletas"]
+    return K.lin(c or K.cfg(), "muletas")
 # Fora da assinatura do ok: o que só ajusta o visual ou registra a revisão. O resto (o que sai, a ordem, as cenas, os
 # textos na tela, os cortes em pé) muda o que a pessoa aprovou e pede ok novo.
 NAO_ASSINA = {"zooms", "camera", "bolha", "emendas_aceitas", "legenda_trocas", "trabalho"}
@@ -98,7 +103,7 @@ def roda(cmd, **kw):
 
 def norm(w):
     n = K.norm(w)
-    return K.NUMEROS.get(n, n)
+    return K.lin(K.cfg(), "numeros").get(n, n)
 
 
 def bruta(w):
@@ -681,7 +686,8 @@ def maiusculas(palavras, inicios=()):
     return palavras
 
 
-def frases_de(palavras, quebras=(), letras=40):
+def frases_de(palavras, quebras=(), letras=None):
+    letras = letras or K.lin(K.cfg(), "frases")
     frases, cur = [], []
     for k, it in enumerate(palavras):
         cur.append(it)
@@ -698,12 +704,13 @@ def frases_de(palavras, quebras=(), letras=40):
 
 
 def blocos_reel(palavras):
-    """legenda do corte em pé: blocos de até 3 palavras e 14 letras, palavra a palavra."""
+    """legenda do corte em pé: blocos curtos, em palavras e letras, do tamanho do idioma."""
+    palavras_max, letras_max = K.lin(K.cfg(), "reel")
     blocos, cur = [], []
     for i, p in enumerate(palavras):
         cur.append(p)
         prox = palavras[i + 1] if i + 1 < len(palavras) else None
-        if (prox is None or len(cur) >= 3 or sum(len(x["w"]) for x in cur) >= 14 or p["w"][-1:] in ".?!:,"
+        if (prox is None or len(cur) >= palavras_max or sum(len(x["w"]) for x in cur) >= letras_max or p["w"][-1:] in ".?!:,"
                 or prox["q"] - p["q"] > FPS * 0.9):
             fim = min(prox["q"] if prox else p["q"] + FPS, p["q"] + int(FPS * 1.2))
             blocos.append({"q0": cur[0]["q"], "q1": max(fim, cur[0]["q"] + 8), "palavras": cur})
@@ -964,7 +971,7 @@ def copiar_marca(pub):
 
 
 def convite(r, padrao_dur):
-    c = r.get("convite", K.cfg().get("convite"))
+    c = r.get("convite") or K.convite(K.cfg())
     if not c:
         return None, 0.0
     return {"titulo": c.get("titulo", ""), "texto": c.get("texto", ""), "endereco": c.get("endereco", "")}, float(c.get("dur", padrao_dur))
@@ -1043,7 +1050,7 @@ def cmd_novo(id_, projeto):
     if arq.exists():
         raise Erro(f"edicoes/{id_}.json já existe")
     EDICOES.mkdir(exist_ok=True)
-    r = dict(MODELO, titulo=g.p.stem, projeto=str(g.p.resolve()))
+    r = dict(MODELO, titulo=g.p.stem, projeto=str(g.p.resolve()), idioma=K.lin(K.cfg(), "transcricao")[0])
     arq.write_text(json.dumps(r, ensure_ascii=False, indent=1) + "\n", encoding="utf-8")
     print(f"  criado edicoes/{id_}.json: {g.duracao / 60:.1f} min de gravação, tela {g.W}x{g.H}, "
           f"{'com' if g.camera else 'sem'} câmera (Screen Studio {g.versao})")
@@ -1108,7 +1115,7 @@ def cmd_plano(r):
         e = emendas.get((i, j))
         prova = "sem prova ainda" if not e else (f"emenda provada ({e['nota']})" if e["nota"] >= NOTA_EMENDA else f"emenda a ouvir ({e['nota']})")
         md.append(f"- {mmss(ws[i]['s'])} «{antes} ~~{' '.join(ws[k]['w'] for k in range(i, j + 1))}~~ {depois}» · {prova}")
-    sobrou = [(ws[i]["w"], ws[i]["s"]) for i in plano["fica"] if bruta(ws[i]["w"]) in {bruta(m) for m in r.get("muletas", MULETAS)}]
+    sobrou = [(ws[i]["w"], ws[i]["s"]) for i in plano["fica"] if bruta(ws[i]["w"]) in {bruta(m) for m in muletas_de(r)}]
     if sobrou:
         md += ["", "**Muletas que ficaram:** " + ", ".join(f"{w} ({mmss(s)})" for w, s in sobrou)]
     if plano["parciais"]:
@@ -1308,7 +1315,7 @@ def cmd_conferir(r, aprovar_agora=False):
         if op != "equal":
             t = ouvido[min(c0, len(ouvido) - 1)]["s"] if ouvido else 0
             difs.append({"em": round(t, 2), "esperado": " ".join(esperado[a:b]), "ouvido": " ".join(obtido[c0:e0])})
-    muletas = {bruta(m) for m in r.get("muletas", MULETAS)}
+    muletas = {bruta(m) for m in muletas_de(r)}
     sem, baixas = emendas_pendentes(r, ws)
     feitas = emendas_validas(r, ws)
     c = {"audio": h, "semelhanca": round(sm.ratio(), 3), "diferencas": difs,
@@ -1545,7 +1552,7 @@ def cmd_reels(r):
     pub = d / "reels" / "publico"
     pub.mkdir(parents=True, exist_ok=True)
     tema = copiar_marca(pub)
-    conv = cfg.get("convite") or K.cfg().get("convite")
+    conv = cfg.get("convite") or K.convite(K.cfg())
     conv = {"titulo": conv.get("titulo", ""), "texto": conv.get("texto", ""), "endereco": conv.get("endereco", "")} if conv else None
     ids = set()
     for c in cfg["cortes"]:

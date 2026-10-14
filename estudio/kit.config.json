@@ -1,5 +1,6 @@
 {
-  "_leia": "Configuração do estúdio. Tema, voz, convite final e as travas de conteúdo. A chave da ElevenLabs NUNCA aqui: fica no .env do estúdio (o instalador cria) ou na variável ELEVENLABS_API_KEY. A marca da pessoa (marca/marca.json) entra aqui com 'python3 scripts/kit.py marca'.",
+  "_leia": "Configuração do estúdio. Tema, voz, convite final e as travas de conteúdo. A chave da ElevenLabs NUNCA aqui: fica no .env do estúdio (o instalador cria) ou na variável ELEVENLABS_API_KEY. A marca da pessoa (marca/marca.json) entra aqui com 'python3 scripts/kit.py marca'. O idioma padrão é o pt-BR, e os valores dele ficam AQUI, no topo: trocar de idioma não move nada do português, então quem já narrou em português não paga a narração de novo. Os outros idiomas ficam em 'linguas.<tag>', com as mesmas chaves.",
+  "idioma": "pt-BR",
   "tema": {
     "fundo": "#0f1114",
     "fundo2": "#171b20",
@@ -59,5 +60,35 @@
   "conferencia": {
     "_leia": "A fala de cada parte é revisada pela própria sessão do Claude (subagente) antes de montar. Com o faster-whisper instalado (o instalador oferece), o relatório traz também a transcrição LOCAL e gratuita; nada sai da máquina. 'modelo_local': tiny, base, small (padrão) ou medium.",
     "modelo_local": "small"
+  },
+  "linguas": {
+    "en-US": {
+      "_leia": "O conteúdo da PESSOA em inglês: voz, pronúncia e convite. As mensagens dos scripts e os números de língua (ritmo, muletas, blocos de legenda, locale) NÃO ficam aqui: ficam em scripts/idioma.py, porque o --atualizar copia o script e nunca sobrescreve este arquivo. Chave ausente = o valor do idioma padrão (pt-BR).",
+      "voz": {
+        "provedor": "elevenlabs",
+        "elevenlabs": {
+          "_leia": "Lauren — Instructional Voice, Elearning: voz pública da biblioteca do ElevenLabs, em inglês americano (categoria professional, use_case informative_educational), o mesmo perfil da Raquel em português. 'python3 scripts/kit.py voz' põe a voz na sua conta e gera um áudio de teste. Os voice_settings ficam de fora de propósito: os padrões da API são os que a demonstração do catálogo usa; ajuste depois de ouvir.",
+          "nome": "Lauren",
+          "voice_id": "9sRwEoYySFRJ5Y9Jyf0B",
+          "dono_publico": "a9c87a3d70a7294fcdeccc3887ceef65d1c7af74b02e85e905f37783ddb4af4f",
+          "model_id": "eleven_v4"
+        },
+        "velocidade": 1.1,
+        "pausa_entre_partes": 0.35
+      },
+      "pronuncia": {
+        "_leia": "palavra escrita → como a voz deve dizer (siglas, nomes estrangeiros). Em inglês, são as siglas e os nomes que a voz soletra errado.",
+        "AI": "A I",
+        "API": "A P I",
+        "SQL": "sequel",
+        "claquete": "clackete",
+        "ChatADV": "Chat A D V"
+      },
+      "convite": {
+        "titulo": "Enjoyed this lesson?",
+        "texto": "Watch the others at",
+        "endereco": "yoursite.com"
+      }
+    }
   }
 }

@@ -40,7 +40,7 @@ export const Aula: React.FC<{ plano: Plano; formato: Formato }> = ({ plano, form
   const { durationInFrames } = useVideoConfig();
   const L = LAYOUT[formato];
   const { janela } = L;
-  const ambiente = { tema: plano.tema, formato, esc: L.escala, areaW: janela.w, areaH: janela.h };
+  const ambiente = { tema: plano.tema, formato, esc: L.escala, areaW: janela.w, areaH: janela.h, idioma: (plano.idioma as "pt-BR" | "en-US") ?? "pt-BR" };
   const fimFala = Math.round((plano.total - plano.encerramento) * FPS);
   const trilhaVolume = (f: number) =>
     interpolate(f, [0, 30, durationInFrames - 45, durationInFrames], [0, plano.trilha.volume, plano.trilha.volume, 0], {
@@ -71,7 +71,7 @@ export const Aula: React.FC<{ plano: Plano; formato: Formato }> = ({ plano, form
           destaques={plano.destaques}
           y={L.legendaY}
           fonte={L.legendaFonte}
-          maxLetras={formato === "v" ? 26 : 44}
+          maxLetras={plano.legenda?.max_letras?.[formato] ?? (formato === "v" ? 26 : 44)}
         />
         <Sequence from={fimFala} name="encerramento">
           <Encerramento plano={plano} />

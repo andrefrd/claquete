@@ -2,6 +2,9 @@
 
 <img src="https://capsule-render.vercel.app/api?type=waving&color=0:0F1114,100:153626&height=210&section=header&text=Claquete.ai&fontColor=FFFFFF&fontSize=58&fontAlignY=36&desc=o%20est%C3%BAdio%20de%20v%C3%ADdeo%20que%20o%20Claude%20opera&descAlignY=58&descSize=18" width="100%" alt="Claquete.ai" />
 
+<a href="README.md"><img src="https://img.shields.io/badge/🇧🇷%20Português-2EE59D?style=for-the-badge" alt="Português" /></a>
+<a href="README.en.md"><img src="https://img.shields.io/badge/🇺🇸%20English-0F1114?style=for-the-badge" alt="English" /></a>
+
 <img src="https://readme-typing-svg.demolab.com?font=JetBrains+Mono&weight=600&size=20&pause=1300&color=2EE59D&center=true&vCenter=true&width=760&lines=Demonstra%C3%A7%C3%A3o+e+trilha+de+uma+ferramenta;Aula+animada+de+2+a+5+minutos;Sua+grava%C3%A7%C3%A3o+do+Screen+Studio%2C+editada;Avatar%2C+an%C3%BAncio+e+corte+viral;Vinheta+de+marca+em+motion+design;O+Claude+roteiriza%2C+grava%2C+edita+e+revisa" alt="O que o Claquete faz" />
 
 <br/>
@@ -199,21 +202,23 @@ gravações, marca, chaves e configuração.
 
 | | O que o instalador faz |
 |---|---|
+| **0. Idioma** | a primeira pergunta: **português (Brasil)** ou **English (US)**. Decide as skills que vão para a máquina, a voz, a pronúncia, o convite do fim dos vídeos e o idioma das mensagens. Se o sistema estiver em inglês, o inglês já vem marcado; o Enter aceita |
 | **1. Skills** | copia as skills da Claquete e as de motion design da iart.ai (para você, ou só para o projeto atual) |
 | **2. Estúdio** | cria a pasta `estudio-video/` com o projeto que monta os vídeos (ou atualiza a que já existe) |
 | **3. Ferramentas** | instala Remotion, React e Playwright, baixa os navegadores, instala ffmpeg e Python 3 se faltarem, monta o app das telas animadas e **baixa do reactbits.dev os 12 componentes grátis** para a sua máquina e, se você quiser, a transcrição local e gratuita da fala (faster-whisper, num ambiente só do estúdio) |
-| **4. Voz** | pede a chave da ElevenLabs sem mostrar na tela, guarda num `.env` só seu, põe a voz Raquel na sua conta e gera um áudio de teste. Tem licença do **React Bits Pro**? Ela é pedida aqui (opcional) e baixa os componentes Pro |
+| **4. Voz** | pede a chave da ElevenLabs sem mostrar na tela, guarda num `.env` só seu, põe a voz do idioma na sua conta (a Raquel em português, a Lauren em inglês) e gera um áudio de teste. Tem licença do **React Bits Pro**? Ela é pedida aqui (opcional) e baixa os componentes Pro |
 | **5. Sua marca** | um questionário: nome, público, site, Instagram, TikTok, cores, fontes, logo, estilo de movimento, tom, palavras proibidas, glossário da sua área, voz e a chamada do fim. Aceita também uma **pasta, um HTML, um `.md` ou um link** com o padrão da marca, que o Claude lê depois |
 | **6. Teste** | valida o vídeo de exemplo, confere que o Remotion monta o projeto e que as telas animadas compilam |
 
 **Uma chave só:** a da ElevenLabs (a licença do React Bits Pro é opcional). Nenhuma outra API: quem revisa a fala é a
 própria sessão do Claude, com subagentes.
 
-Sem perguntas: `--tudo`. Outras opções: `--atualizar`, `--projeto`, `--global`, `--skills claquete,aula-animada`,
+Sem perguntas: `--tudo` (em português; para inglês, junte `--idioma en-US`). Outras opções: `--idioma pt-BR|en-US`, `--atualizar`, `--projeto`, `--global`, `--skills claquete,aula-animada`,
 `--estudio ./minha-pasta`, `--sem-ferramentas`, `--sem-motion`, `--sem-marca`, `--sem-cenas`, `--sem-reactbits`,
 `--transcricao-local`, `--desinstalar`,
 `--versao`. Instalar não apaga nada: skill que já existe vira cópia de segurança. O `--desinstalar` remove as skills e
-deixa o estúdio.
+deixa o estúdio. Trocar o idioma de um estúdio que já existe: `--atualizar --idioma en-US` (ou `pt-BR`); sem a flag, o
+`--atualizar` não mexe no idioma. As opções têm nomes em inglês também (`--all`, `--update`, `--studio`, `--lang`...).
 
 **Precisa ter antes:** Node 18+ (o resto o instalador resolve). macOS, Linux ou Windows; no macOS, o ffmpeg vem pelo
 [Homebrew](https://brew.sh).

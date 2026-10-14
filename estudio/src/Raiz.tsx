@@ -1,7 +1,7 @@
 import React from "react";
 import { AbsoluteFill, Composition } from "remotion";
 import { Aula } from "./Aula";
-import { AULAS } from "./indice.gen";
+import { AULAS, IDIOMA } from "./indice.gen";
 import { TAMANHO } from "./layout";
 import { FPS } from "./tempo";
 
@@ -10,7 +10,7 @@ import { FPS } from "./tempo";
 // Sem nenhuma aula montada ainda: uma tela que diz o que fazer (o Studio não abre vazio).
 const Vazio: React.FC = () => (
   <AbsoluteFill style={{ background: "#0f0e0c", color: "#f1ece3", alignItems: "center", justifyContent: "center", fontFamily: "sans-serif", fontSize: 44, textAlign: "center" }}>
-    Nenhuma aula montada ainda.
+    {IDIOMA === "en-US" ? "No lesson assembled yet." : "Nenhuma aula montada ainda."}
     <div style={{ fontSize: 30, opacity: 0.7, marginTop: 20 }}>python3 scripts/kit.py fazer exemplo</div>
   </AbsoluteFill>
 );

@@ -37,6 +37,11 @@ import unicodedata
 import urllib.request
 from pathlib import Path
 
+# O módulo do idioma mora ao lado deste, mas o `teste.py` carrega o kit por caminho
+# (spec_from_file_location não põe a pasta no sys.path), então o caminho entra à mão.
+sys.path.insert(0, str(Path(__file__).resolve().parent))
+import idioma as M  # noqa: E402
+
 RAIZ = Path(__file__).resolve().parent.parent
 AULAS = RAIZ / "aulas"
 PUBLIC = RAIZ / "public"
@@ -51,19 +56,7 @@ CENAS = RAIZ / "cenas"
 DURACAO = {"aula": (120, 300), "caso": (120, 300), "trilha": (120, 300), "demonstracao": (60, 240), "dica": (30, 90),
            "exemplo": (10, 300)}
 COM_MINUTOS = {"aula", "caso", "trilha"}
-PALAVRAS_POR_SEGUNDO = 2.5  # fala em português, antes da velocidade
-# A transcrição escreve número em algarismo ("2 minutos") onde o roteiro tem "dois minutos": na comparação, os dois viram
-# algarismo. "um" e "uma" ficam de fora (quase sempre são artigo).
-NUMEROS = {"zero": "0", "dois": "2", "duas": "2", "tres": "3", "quatro": "4", "cinco": "5", "seis": "6", "sete": "7",
-           "oito": "8", "nove": "9", "dez": "10", "onze": "11", "doze": "12", "treze": "13", "catorze": "14", "quatorze": "14",
-           "quinze": "15", "dezesseis": "16", "dezessete": "17", "dezoito": "18", "dezenove": "19", "vinte": "20",
-           "trinta": "30", "quarenta": "40", "cinquenta": "50", "sessenta": "60", "setenta": "70", "oitenta": "80",
-           "noventa": "90", "cem": "100"}
 REVISAR_ABAIXO, REPROVAR_ABAIXO = 0.9, 0.75  # semelhança com o roteiro: entre os dois, o subagente decide
-# O que a voz diz igual e o transcritor (ou o ouvinte) não distingue: o relatório da conferência aponta para o subagente.
-HOMOFONOS = [(r"\bpor qu[eê]\b|\bporqu[eê]\b", "por que / por quê / porque soam iguais: troque a construção ('os motivos')"),
-             (r"\bma[lu]\b", "mal / mau soam iguais"), (r"\bcon[cs]erto\b", "conserto / concerto soam iguais"),
-             (r"\b(sess|se[cç]|cess)[aã]o\b", "sessão / seção / cessão soam iguais")]
 RAIZ_VERSAO = RAIZ / "VERSAO"
 LIMITES = {"lista": ("itens", 5), "fluxo": ("passos", 5)}
 INICIO = 0.3          # silêncio antes da primeira fala
@@ -96,6 +89,38 @@ def carregar_env():
 
 def cfg():
     return json.loads((RAIZ / "kit.config.json").read_text(encoding="utf-8"))
+
+
+def dados(c):
+    """O conteúdo da PESSOA no idioma ativo (voz, pronúncia, convite).
+
+    O pt-BR não se move: os valores dele são os do topo do kit.config.json, exatamente como sempre
+    foram — é isso que mantém a assinatura da narração igual e não faz ninguém pagar de novo por um
+    áudio já narrado. Os outros idiomas ficam em `linguas.<tag>`.
+    """
+    t = M.tag(c)
+    return c if t == M.PADRAO else ((c.get("linguas") or {}).get(t) or {})
+
+
+def voz(c):
+    """O bloco `voz` do idioma ativo. Idêntico ao de hoje em pt-BR: é ele que entra na assinatura da
+    narração, então trocá-lo de forma faria a pessoa pagar de novo por um áudio que já tem."""
+    return dados(c).get("voz") or c["voz"]
+
+
+def pronuncia(c):
+    """O mapa `pronuncia` do idioma ativo (chave ausente no idioma = mapa vazio)."""
+    return dados(c).get("pronuncia") or (c["pronuncia"] if M.tag(c) == M.PADRAO else {})
+
+
+def convite(c):
+    """O `convite` do idioma ativo."""
+    return dados(c).get("convite") or c["convite"]
+
+
+def lin(c, campo):
+    """Parâmetro de língua (ritmo, muletas, blocos de legenda, locale) do idioma ativo."""
+    return M.lin(c, campo)
 
 
 def aula(id_):
@@ -156,9 +181,10 @@ def http_json(url, corpo, cabecalhos):
 def estimativa(a, c):
     """Segundos de fala estimados pelo número de palavras (antes de narrar), mais o encerramento."""
     palavras = sum(len(p.get("fala", "").split()) for p in a.get("partes", []))
-    vel = c["voz"].get("velocidade", 1.0)
-    pausa = c["voz"].get("pausa_entre_partes", 0.35)
-    return palavras / (PALAVRAS_POR_SEGUNDO * vel) + pausa * max(0, len(a.get("partes", [])) - 1) + INICIO + FOLGA_FINAL + ENCERRAMENTO
+    v = voz(c)
+    vel = v.get("velocidade", 1.0)
+    pausa = v.get("pausa_entre_partes", 0.35)
+    return palavras / (lin(c, "ritmo") * vel) + pausa * max(0, len(a.get("partes", [])) - 1) + INICIO + FOLGA_FINAL + ENCERRAMENTO
 
 
 def componente_cena(tela, i):
@@ -395,18 +421,19 @@ def aplicar_marca():
         t["fundo_imagem"] = m["fundo_imagem"]
     if m.get("logo") and (PUBLIC / m["logo"]).is_file():
         c["tema"]["logo"] = m["logo"]  # aparece no encerramento de todo vídeo
+    d_conv, d_voz = convite(c), voz(c)
     cta = m.get("chamada", {})
     if cta.get("texto"):
-        c["convite"]["titulo"] = cta["texto"]
+        d_conv["titulo"] = cta["texto"]
     if cta.get("endereco") or m.get("site"):
-        c["convite"]["endereco"] = cta.get("endereco") or m.get("site")
-        c["convite"]["texto"] = cta.get("linha", "")
+        d_conv["endereco"] = cta.get("endereco") or m.get("site")
+        d_conv["texto"] = cta.get("linha", "")
     proibidas = set(c["travas"].get("proibidas_na_fala", [])) | set(m.get("palavras_proibidas", []))
     c["travas"]["proibidas_na_fala"] = sorted(proibidas)
     if m.get("voz", {}).get("voice_id"):
-        c["voz"]["elevenlabs"]["voice_id"] = m["voz"]["voice_id"]
-        c["voz"]["elevenlabs"]["nome"] = m["voz"].get("nome", "Voz da marca")
-        c["voz"]["elevenlabs"].pop("dono_publico", None)
+        d_voz["elevenlabs"]["voice_id"] = m["voz"]["voice_id"]
+        d_voz["elevenlabs"]["nome"] = m["voz"].get("nome", "Voz da marca")
+        d_voz["elevenlabs"].pop("dono_publico", None)
     gerar_fontes(c)
     (RAIZ / "kit.config.json").write_text(json.dumps(c, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     print(f"  marca \"{m.get('nome', '?')}\" aplicada ao kit.config.json (cores, fontes, convite, palavras proibidas)")
@@ -431,7 +458,7 @@ def falado(fala, pronuncia):
 
 
 def tts_elevenlabs(texto, anterior, seguinte, c):
-    v = c["voz"]["elevenlabs"]
+    v = voz(c)["elevenlabs"]
     if not v.get("voice_id"):
         raise Erro("defina voz.elevenlabs.voice_id no kit.config.json")
     ajustes = dict(v.get("voice_settings", {}))
@@ -458,8 +485,8 @@ def tempos_por_caracteres(spans, al, fala):
 def assinatura_parte(fala, c):
     """Muda quando a fala, a voz ou a pronúncia de uma palavra DESTA fala muda. Mexer na pronúncia de outra palavra
     não paga a narração desta parte de novo."""
-    usadas = {k: v for k, v in c["pronuncia"].items() if not k.startswith("_") and re.search(rf"(?<!\w){re.escape(k)}(?!\w)", fala)}
-    return hashlib.sha256(json.dumps([fala, c["voz"], usadas], sort_keys=True).encode()).hexdigest()[:16]
+    usadas = {k: v for k, v in pronuncia(c).items() if not k.startswith("_") and re.search(rf"(?<!\w){re.escape(k)}(?!\w)", fala)}
+    return hashlib.sha256(json.dumps([fala, voz(c), usadas], sort_keys=True).encode()).hexdigest()[:16]
 
 
 def narrar(id_, partes=None):
@@ -467,10 +494,10 @@ def narrar(id_, partes=None):
     if not aprovado(id_):
         raise Erro(f"o roteiro ainda não foi aprovado (ou mudou depois do ok). Rode: kit.py plano {id_}, mostre e, com o ok, kit.py aprovar {id_}")
     d = pasta(id_)
-    provedor = c["voz"].get("provedor", "elevenlabs")
+    provedor = voz(c).get("provedor", "elevenlabs")
     if provedor != "elevenlabs":
         raise Erro("a voz é da ElevenLabs (voz.provedor = \"elevenlabs\" no kit.config.json)")
-    vel = c["voz"].get("velocidade", 1.0)
+    vel = voz(c).get("velocidade", 1.0)
     falas = [p["fala"] for p in a["partes"]]
     for i, fala in enumerate(falas, 1):
         if partes and i not in partes:
@@ -480,7 +507,7 @@ def narrar(id_, partes=None):
         if not partes and meta.exists() and json.loads(meta.read_text()).get("assinatura") == assinatura and mp3.exists():
             print(f"  parte {i}: já narrada (mesma fala e voz)")
             continue
-        texto, spans = falado(fala, c["pronuncia"])
+        texto, spans = falado(fala, pronuncia(c))
         audio, al = tts_elevenlabs(texto, falas[i - 2] if i > 1 else "", falas[i] if i < len(falas) else "", c)
         palavras = tempos_por_caracteres(spans, al, fala)
         # A velocidade é aplicada depois, igual para qualquer modelo (nem todo modelo respeita "speed").
@@ -514,10 +541,10 @@ def http(metodo, url, chave_api, corpo=None):
 
 def preparar_voz():
     c = cfg()
-    if c["voz"].get("provedor", "elevenlabs") != "elevenlabs":
+    if voz(c).get("provedor", "elevenlabs") != "elevenlabs":
         print("  provedor de voz não é o ElevenLabs: nada a preparar")
         return
-    v = c["voz"]["elevenlabs"]
+    v = voz(c)["elevenlabs"]
     k = chave("ELEVENLABS_API_KEY")
     status, d = http("GET", f"https://api.elevenlabs.io/v1/voices/{v['voice_id']}", k)
     if status == 200:
@@ -538,7 +565,7 @@ def preparar_voz():
     else:
         raise Erro(f"a voz {v['voice_id']} não está na sua conta ({status}). Confira o voice_id.")
     SAIDA.mkdir(exist_ok=True)
-    audio, _ = tts_elevenlabs("Olá! Esta é a voz do seu estúdio. Tudo pronto para a primeira aula.", "", "", c)
+    audio, _ = tts_elevenlabs(lin(c, "voz_teste"), "", "", c)
     (SAIDA / "teste-voz.mp3").write_bytes(audio)
     print(f"  áudio de teste: {SAIDA / 'teste-voz.mp3'}")
 
@@ -552,26 +579,30 @@ def transcricao_local(mp3s, c):
     venv = RAIZ / ".venv" / ("Scripts/python.exe" if os.name == "nt" else "bin/python")
     if not venv.exists():
         return None
+    # O idioma entra por argumento: o script roda dentro do .venv do estúdio, sem acesso a este
+    # arquivo nem ao kit.config.json. Sem ele, inglês seria transcrito como português, sem erro.
+    iso = lin(c, "transcricao")[1]
     script = ("import sys, json\nfrom faster_whisper import WhisperModel\n"
               f"m = WhisperModel({modelo!r}, compute_type='int8')\n"
-              "print(json.dumps([' '.join(x.text.strip() for x in m.transcribe(a, language='pt')[0]) for a in sys.argv[1:]]))")
-    print(f"  transcrição local ({modelo}), {len(mp3s)} partes...")
-    r = subprocess.run([str(venv), "-c", script, *map(str, mp3s)], capture_output=True, text=True)
+              "lang = sys.argv[1]\n"
+              "print(json.dumps([' '.join(x.text.strip() for x in m.transcribe(a, language=lang)[0]) for a in sys.argv[2:]]))")
+    print(M.t(c, "transcricao_local", modelo=modelo, n=len(mp3s)))
+    r = subprocess.run([str(venv), "-c", script, iso, *map(str, mp3s)], capture_output=True, text=True)
     if r.returncode:
-        print(f"  (transcrição local falhou: {r.stderr.strip()[-300:]})")
+        print(M.t(c, "transcricao_falhou", erro=r.stderr.strip()[-300:]))
         return None
     return json.loads(r.stdout.strip().splitlines()[-1])
 
 
 def alertas_da_fala(fala, c):
     out = []
-    for padrao, msg in HOMOFONOS:
+    for padrao, msg in lin(c, "homofonos"):
         if re.search(padrao, fala, re.I):
             out.append(msg)
     if re.search(r"\b(1[5-9]|20)\d\d\b", fala):
         out.append("ano no texto: confira se a voz leu como número")
-    pron = {k for k in c["pronuncia"] if not k.startswith("_")}
-    for sigla in sorted(set(re.findall(r"\b[A-ZÁÉÍÓÚÂÊÔÃÕÇ]{2,}\b", fala)) - pron):
+    pron = {k for k in pronuncia(c) if not k.startswith("_")}
+    for sigla in sorted(set(re.findall(lin(c, "sigla"), fala)) - pron):
         out.append(f"sigla {sigla} sem pronúncia em kit.config.json: confira como a voz leu")
     return out
 
@@ -608,11 +639,12 @@ def conferir(id_, aprovar_agora=False):
         mp3 = d / f"parte-{i:02d}.mp3"
         ouvido = ouvidos[i - 1] if local else None
         item = {"parte": i, "audio": str(mp3.relative_to(RAIZ)), "duracao": round(duracao_audio(mp3), 2), "fala": p["fala"],
-                "falado": falado(p["fala"], c["pronuncia"])[0], "alertas": alertas_da_fala(p["fala"], c),
+                "falado": falado(p["fala"], pronuncia(c))[0], "alertas": alertas_da_fala(p["fala"], c),
                 "ouvido": ouvido, "similaridade": None, "diferencas": [], "ok": None}
         if ouvido is not None:
-            esperado = [NUMEROS.get(w, w) for w in (aceitar.get(w, w) for w in palavras_de(p["fala"]))]
-            escutado = [NUMEROS.get(w, w) for w in (aceitar.get(w, w) for w in palavras_de(ouvido))]
+            num = lin(c, "numeros")
+            esperado = [num.get(w, w) for w in (aceitar.get(w, w) for w in palavras_de(p["fala"]))]
+            escutado = [num.get(w, w) for w in (aceitar.get(w, w) for w in palavras_de(ouvido))]
             sm = difflib.SequenceMatcher(None, esperado, escutado, autojunk=False)
             item["similaridade"] = round(sm.ratio(), 3)
             item["diferencas"] = [f"{' '.join(esperado[i1:i2]) or '∅'} → {' '.join(escutado[j1:j2]) or '∅'}"
@@ -716,9 +748,9 @@ def montar(id_, formatos):
     assin = [json.loads((d / f"parte-{i:02d}.json").read_text(encoding="utf-8")).get("assinatura") for i in range(1, len(a["partes"]) + 1)
              if (d / f"parte-{i:02d}.json").exists()]
     if not ok_arq.exists() or json.loads(ok_arq.read_text(encoding="utf-8")).get("assinaturas") != assin:
-        raise Portao(f"a fala ainda não foi aprovada na revisão (ou foi narrada de novo depois): kit.py conferir {id_}")
+        raise Portao(M.t(c, "portao_fala", id=id_, rel=(pasta(id_) / "conferencia.json").relative_to(RAIZ), local=""))
     limite = c["travas"].get("tela_parada_segundos", 2.5)
-    pausa = c["voz"].get("pausa_entre_partes", 0.35)
+    pausa = voz(c).get("pausa_entre_partes", 0.35)
     partes, t = [], INICIO
     ritmo = []
     for i, p in enumerate(a["partes"], 1):
@@ -763,7 +795,10 @@ def montar(id_, formatos):
     trilha = c.get("trilha", {})
     plano = {"id": id_, "titulo": a["titulo"], "cabecalho": a["cabecalho"], "formatos": ["h", "v"],
              "destaques": a.get("destaques", []), "partes": partes, "pausa": pausa, "encerramento": ENCERRAMENTO,
-             "total": total, "tema": tema, "convite": a.get("convite") or c["convite"],
+             "total": total, "tema": tema, "convite": a.get("convite") or convite(c),
+             # O renderer não lê o kit.config.json (o plano.json é o contrato entre o Python e o TSX):
+             # o idioma e o tamanho do bloco de legenda viajam aqui.
+             "idioma": M.tag(c), "legenda": {"max_letras": lin(c, "tela")},
              "trilha": {"arquivo": trilha.get("arquivo", ""), "volume": trilha.get("volume", 0.07)}}
     (d / "plano.json").write_text(json.dumps(plano, ensure_ascii=False, indent=1))
     gerar_fontes(c)
@@ -793,7 +828,7 @@ def capturas_feitas(id_):
 
 def cenas_pendentes(id_):
     a, c, d = aula(id_), cfg(), pasta(id_)
-    pausa, feitas, out = c["voz"].get("pausa_entre_partes", 0.35), capturas_feitas(id_), []
+    pausa, feitas, out = voz(c).get("pausa_entre_partes", 0.35), capturas_feitas(id_), []
     for i, p in enumerate(a["partes"], 1):
         if p["tela"]["tipo"] != "animada" or not (d / f"parte-{i:02d}.json").exists():
             continue
@@ -813,13 +848,13 @@ def cenas(id_, partes=None, previa=False):
         print("  nenhuma tela animada para fotografar")
         return
     if not conferencia_ok(id_):
-        raise Portao(f"a fala ainda não foi aprovada na revisão, e a cena anda no tempo das palavras: kit.py conferir {id_}")
+        raise Portao(M.t(c, "portao_fala_cena", id=id_))
     if not (CENAS / "node_modules").exists():
         raise Erro("o app de cenas não está instalado: no estúdio, rode 'cd cenas && npm install' (o instalador faz isso)")
     faltam = [f"parte {i}: {componente_cena(a['partes'][i - 1]['tela'], i)}" for i in alvo if not cena_existe(id_, componente_cena(a["partes"][i - 1]["tela"], i))]
     if faltam:
         raise Erro(f"cena que não existe em cenas/src/aulas/{id_}.jsx: " + "; ".join(faltam))
-    pausa = c["voz"].get("pausa_entre_partes", 0.35)
+    pausa = voz(c).get("pausa_entre_partes", 0.35)
     tema = {k: v for k, v in c["tema"].items() if not k.startswith("_")}
     lista, assin = [], {}
     for i in alvo:
@@ -902,8 +937,11 @@ def indice():
     for p in sorted((PUBLIC / "aulas").glob("*/plano.json")):
         planos[p.parent.name] = json.loads(p.read_text(encoding="utf-8"))
     corpo = json.dumps(planos, ensure_ascii=False, indent=1)
+    # O IDIOMA vai junto porque o Raiz.tsx é registrado sem prop (registerRoot(Raiz)): a tela que o
+    # Remotion Studio mostra quando não há aula montada precisa saber em que idioma falar.
     (RAIZ / "src" / "indice.gen.ts").write_text(
         "// Gerado por scripts/kit.py. Não edite à mão.\nimport type { Plano } from \"./tipos\";\n\n"
+        f"export const IDIOMA: string = {json.dumps(M.tag(cfg()))};\n"
         f"export const AULAS: Record<string, Plano> = {corpo} as Record<string, Plano>;\n", encoding="utf-8")
 
 
@@ -958,13 +996,13 @@ def tela_parada(video, formato, limite, ate_segundo):
     return re.findall(r"freeze_start: ([\d.]+)", r.stderr)
 
 
-def legendas(plano, destino):
-    """Arquivos de legenda (.vtt e .srt) a partir dos tempos das palavras, em blocos de até ~42 letras."""
+def legendas(plano, destino, c):
+    """Arquivos de legenda (.vtt e .srt) a partir dos tempos das palavras, em blocos do tamanho do idioma."""
     blocos = []
     for parte in plano["partes"]:
         atual, letras = [], 0
         for w in parte["palavras"]:
-            if atual and letras + len(w["p"]) > 42:
+            if atual and letras + len(w["p"]) > lin(c, "vtt"):
                 blocos.append(atual)
                 atual, letras = [], 0
             atual.append((parte["inicio"] + w["ini"], parte["inicio"] + w["fim"], w["p"]))
@@ -990,7 +1028,7 @@ def legendas(plano, destino):
 def finalizar(id_, formatos, pagina=False):
     c = cfg()
     plano = json.loads((pasta(id_) / "plano.json").read_text(encoding="utf-8"))
-    legendas(plano, SAIDA / id_ / id_)
+    legendas(plano, SAIDA / id_ / id_, cfg())
     limite = c["travas"].get("tela_parada_segundos", 2.5)
     for f in formatos:
         bruto, final = SAIDA / id_ / f"{id_}-{f}-bruto.mp4", SAIDA / id_ / f"{id_}-{f}.mp4"
@@ -1132,7 +1170,7 @@ def main():
                 raise Erro("\n  ".join(erros))
             if not aprovado(a.id):
                 plano_md(a.id)
-                raise Portao(f"mostre o roteiro e o plano de edição à pessoa e, com o ok dela: kit.py aprovar {a.id}")
+                raise Portao(M.t(cfg(), "portao_roteiro", id=a.id))
         if a.comando in ("narrar", "fazer"):
             print("narrar"); narrar(a.id, partes)
         if a.comando == "conferir" or (a.comando == "fazer" and not conferencia_ok(a.id)):

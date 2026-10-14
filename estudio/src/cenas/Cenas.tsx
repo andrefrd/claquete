@@ -289,20 +289,29 @@ const Frase: React.FC<Props> = ({ tela, palavras, duracao }) => {
 // ── numero ───────────────────────────────────────────── RITMO: kicker 0 · número conta de 0,4 até 0,4+min(2,5; 40%) · legenda +0,3
 const Numero: React.FC<Props> = ({ tela, palavras, duracao }) => {
   const frame = useCurrentFrame();
-  const { tema, esc } = useAmbiente();
+  const { tema, esc, idioma = "pt-BR" } = useAmbiente();
   if (tela.tipo !== "numero") return null;
   const fim = 0.4 + Math.min(2.5, duracao * 0.4);
-  const alvo = parseFloat(tela.para.replace(/\./g, "").replace(",", ".").replace(/[^0-9.-]/g, ""));
-  const origem = tela.de ? parseFloat(tela.de.replace(/\./g, "").replace(",", ".").replace(/[^0-9.-]/g, "")) : 0;
+  // O número é escrito no formato do idioma (1.500 em pt-BR, 1,500 em en-US) e precisa ser LIDO no
+  // mesmo formato: separador de milhar é o ponto no pt-BR e a vírgula no en-US. A parte decimal usa
+  // sempre a vírgula, que é com o que o roteiro é escrito ("R$ 1.500,50").
+  const separador = idioma === "en-US" ? "," : ".";
+  const dec = idioma === "en-US" ? "." : ",";
+  const lerNumero = (t: string) => {
+    const limpo = t.replace(new RegExp(`\\${separador}`, "g"), "").replace(dec, ".");
+    return parseFloat(limpo.replace(/[^0-9.-]/g, ""));
+  };
+  const alvo = lerNumero(tela.para);
+  const origem = tela.de ? lerNumero(tela.de) : 0;
   const prefixo = tela.para.match(/^[^0-9-]*/)?.[0] ?? "";
   const sufixo = tela.para.match(/[^0-9.,]*$/)?.[0] ?? "";
-  const casas = (tela.para.split(",")[1] || "").replace(/[^0-9]/g, "").length;
+  const casas = (tela.para.split(dec)[1] || "").replace(/[^0-9]/g, "").length;
   const v = interpolate(frame, [0.4 * FPS, fim * FPS], [origem, alvo], {
     extrapolateLeft: "clamp",
     extrapolateRight: "clamp",
     easing: Easing.out(Easing.cubic),
   });
-  const mostrado = isNaN(alvo) ? tela.para : `${prefixo}${v.toLocaleString("pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas })}${sufixo}`;
+  const mostrado = isNaN(alvo) ? tela.para : `${prefixo}${v.toLocaleString(idioma === "en-US" ? "en-US" : "pt-BR", { minimumFractionDigits: casas, maximumFractionDigits: casas })}${sufixo}`;
   const p = entra(frame, 0.4, FPS);
   return (
     <Palco centro>

@@ -7,6 +7,41 @@ Git (`vX.Y.Z`) e na página de versões do GitHub, sempre iguais.
 - **X.Y.0**: melhoria ou recurso novo que não quebra nada (2.1, 2.2...).
 - **X.Y.Z**: correção (2.1.1, 2.1.2...).
 
+## Não lançado
+
+<sub>O número da versão fica com o mantenedor: o roadmap já reserva a 2.3 para avatar, anúncio e carrossel.</sub>
+
+Inglês: a Claquete fala os dois idiomas. O português continua sendo o padrão, do jeito que sempre foi —
+quem já usa não muda nada. Quem quer em inglês escolhe na primeira pergunta do instalador, ou
+`npx github:dantaspaulo/claquete --idioma en-US`.
+
+- **A pergunta de idioma, no começo.** O instalador pergunta o idioma antes de qualquer coisa, porque
+  ele decide duas de uma vez: quais skills copiar e o que vai para a configuração do estúdio. Em
+  inglês ele sugere `English (US)` já marcado quando o sistema está em inglês (`LANG`/`LC_ALL`); o
+  Enter aceita. Sem terminal interativo (`--tudo`, CI), o padrão segue sendo o português. Trocar
+  depois: `npx github:dantaspaulo/claquete --atualizar --idioma en-US`.
+- **`skills-en/` com as seis skills em inglês**, com os mesmos nomes de pasta das portuguesas — é por
+  eles que o `--desinstalar` remove e que a skill de entrada chama as outras. As frases que acionam
+  cada skill ("quero fazer um vídeo", "edita minha gravação") têm equivalentes em inglês.
+- **Voz, pronúncia e convite por idioma.** O inglês tem voz própria (Lauren — Instructional Voice,
+  Elearning, da biblioteca pública da ElevenLabs, o mesmo perfil da Raquel), o próprio dicionário de
+  pronúncia (`AI` → "A I", `SQL` → "sequel") e o próprio convite de fim de vídeo. Ficam em
+  `linguas.en-US`, no `kit.config.json`.
+- **O idioma atravessa a geração:** a transcrição local passa a receber o idioma por argumento (antes
+  o inglês era transcrito como português, sem erro nenhum), as muletas da gravação editada
+  ("like", "right", "well" no lugar de "né", "certo"), a busca de sigla, o tamanho do bloco de legenda,
+  o formato do número que conta na tela (1.500 em português, 1,500 em inglês) e o locale do roteiro de edição, que nasce no idioma do
+  estúdio.
+- **O português não se move.** Os valores em português continuam onde sempre estiveram, chave por
+  chave. É de propósito: a assinatura que decide se uma parte precisa ser narrada de novo inclui a
+  voz e a pronúncia, então mover a estrutura faria toda narração já paga ser narrada — e cobrada — de
+  novo. Há teste que confere que a assinatura de hoje é a mesma de antes desta versão.
+- **As opções com nome em inglês:** `--all`, `--yes`, `--update`, `--project`, `--studio`, `--no-tools`,
+  `--no-motion`, `--no-brand`, `--no-scenes`, `--no-reactbits`, `--local-transcription`, `--uninstall`,
+  `--version`. As portuguesas continuam funcionando: renomear quebraria tudo o que já está escrito.
+- **`README.en.md`**, com seletor de idioma no topo dos dois READMEs, e **`docs/i18n/TERMOS.md`**, o
+  termo a termo que rege a tradução e registra o que ficou de fora desta entrega (e por quê).
+
 ## 2.2.0 · 13/10/2026
 
 Gravação editada: a sua gravação do Screen Studio 4 vira três vídeos, com a sua voz e sem abrir o app. Quem tem a 2.x

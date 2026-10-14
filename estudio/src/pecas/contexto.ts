@@ -2,7 +2,7 @@ import { createContext, useContext } from "react";
 import type { Tema } from "../tipos";
 import type { Formato } from "../layout";
 
-export type Ambiente = { tema: Tema; formato: Formato; esc: number; areaW: number; areaH: number };
+export type Ambiente = { tema: Tema; formato: Formato; esc: number; areaW: number; areaH: number; idioma?: "pt-BR" | "en-US" };
 
 export const Ctx = createContext<Ambiente | null>(null);
 
